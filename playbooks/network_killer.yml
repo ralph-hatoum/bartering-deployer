@@ -1,0 +1,70 @@
+#SHUTTING DOWN BOTH NETWORKS
+
+# - hosts: IPFScluster-nodes
+#   gather_facts: no
+#   tasks:
+#     - name: Kill IPFS network
+#       shell: killall ipfs-cluster-service
+#       register: command_output
+#     - name: Display outputs
+#       debug: var=command_output.stdout_lines
+
+#TODO ADD BOOTSTRAP + ADAPT TO PROMETHEUS 
+
+- hosts: Bootstrap-node
+  gather_facts: no
+  tasks:
+    - name: Kill IPFS network
+      shell: killall ipfs
+      register: command_output
+      ignore_errors: true
+    - name: Kill data collectors
+      shell: fuser -k 9100/tcp
+      ignore_errors: true
+    - name: Kill IPFSCluster
+      shell: killall ipfs-cluster-service
+      ignore_errors: true
+    - name: Display outputs
+      debug: var=command_output.stdout_lines
+
+- hosts: IPFS-nodes
+  gather_facts: no
+  tasks:
+    - name: Kill IPFS network
+      shell: killall ipfs
+      register: command_output
+      ignore_errors: true
+    - name: Kill IPFSCluster
+      shell: killall ipfs-cluster-service
+      ignore_errors: true
+    - name: Kill data collectors
+      shell: fuser -k 9100/tcp
+      ignore_errors: true
+    - name: Display outputs
+      debug: var=command_output.stdout_lines
+
+- hosts: IPFScluster-nodes
+  gather_facts: no
+  tasks: 
+    - name: Kill IPFSCluster daemons
+      shell: killall ipfs-cluster-se
+      register: command_output
+      ignore_errors: true
+    - name: Display outputs
+      debug: var=command_output.stdout_lines
+
+- hosts: Bootstrap-node
+  gather_facts: no
+  tasks:
+    - name: Delete folders
+      shell: rm -R /home/rhatoum/IPFS_nodes
+
+- hosts: datacollector
+  gather_facts: no
+  tasks:
+  - name: Kill data aggregator
+    shell: pkill -f "python3 IPFS_nodes/data-node/data-collection-node.py"
+    register: command_output
+    ignore_errors: true
+  - name: Display outputs
+    debug: var=command_output.stdout_lines

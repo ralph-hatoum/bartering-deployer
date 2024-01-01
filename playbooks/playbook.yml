@@ -1,0 +1,195 @@
+- gather_facts: false
+  hosts: Bootstrap-node
+  tasks:
+  - name: Make node folder
+    shell: mkdir -p IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}
+  - name: Make kubo folder
+    shell: mkdir -p IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo
+  - copy:
+      dest: IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs
+      src: kubo/kubo/ipfs
+  - copy:
+      dest: IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/node_exporter.py
+      src: kubo/node_exporter.py
+  - name: Authorize execution of ipfs binary
+    shell: chmod u+x IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs
+  - ignore_errors: true
+    name: Initialize IPFS node
+    shell: IPFS_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs
+      IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs init
+  - copy:
+      dest: IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs/swarm.key
+      src: id_secret/swarm.key
+  - name: Retrieving Bootstrap's ID
+    register: BootstrapID
+    shell: 'IPFS_PATH=IPFS_nodes/{{ hostvars[inventory_hostname][''label''] }}/kubo/.ipfs
+      IPFS_nodes/{{ hostvars[inventory_hostname][''label''] }}/kubo/ipfs config show
+      | grep "PeerID" '
+  - name: Delete all bootstraps
+    shell: IPFS_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs
+      IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs bootstrap rm
+      --all
+  - debug: var=BootstrapID.stdout_lines
+    name: Display outputs
+  - copy:
+      content: '{{ BootstrapID.stdout_lines }}'
+      dest: id_secret/bootstrap_id.txt
+    delegate_to: localhost
+    name: Write output to local file
+  - delegate_to: localhost
+    name: Format bootstrap ipfs ID
+    shell: python3 bootstrap_parser.py {{hostvars[inventory_hostname]['label_ip']}}
+  - expect:
+      command: rm -f IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs/blocks/_README
+      responses:
+        Question:
+        - y
+    name: Delete README file that is protected in writing
+  - name: Start IPFS dameons
+    shell: IPFS_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs
+      nohup IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs daemon
+      --enable-gc >/dev/null 2>&1 &
+  - name: Start prometheus node exporter
+    shell: nohup python3 IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/node_exporter.py
+      {{ hostvars[inventory_hostname]['label'] }} >/dev/null 2>&1 &
+- gather_facts: false
+  hosts: IPFS-nodes
+  tasks:
+  - name: Make node folder
+    shell: mkdir -p IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}
+  - name: Make kubo folder
+    shell: mkdir -p IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo
+  - copy:
+      dest: IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs
+      src: kubo/kubo/ipfs
+  - copy:
+      dest: IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/node_exporter.py
+      src: kubo/node_exporter.py
+  - name: Authorize execution of ipfs binary
+    shell: chmod u+x IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs
+  - ignore_errors: true
+    name: Initialize IPFS node
+    shell: IPFS_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs
+      IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs init
+  - copy:
+      dest: IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs/swarm.key
+      src: id_secret/swarm.key
+  - name: Delete all bootstraps
+    shell: IPFS_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs
+      IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs bootstrap rm
+      --all
+  - name: Add bootstrap node
+    shell: IPFS_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs
+      IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs bootstrap add
+      {{ bootstrap_id }}
+  - expect:
+      command: rm -f IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs/blocks/_README
+      responses:
+        Question:
+        - y
+    name: Delete README file that is protected in writing
+  - name: Start IPFS dameons
+    shell: IPFS_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs
+      nohup IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs daemon
+      --enable-gc >/dev/null 2>&1 &
+  - name: Start prometheus node exporter
+    shell: nohup python3 IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/node_exporter.py
+      {{ hostvars[inventory_hostname]['label'] }} >/dev/null 2>&1 &
+  vars:
+    bootstrap_id: '{{lookup(''file'',''id_secret/bootstrap_id.txt'')}}'
+- gather_facts: false
+  hosts: IPFScluster-nodes
+  tasks:
+  - name: Start IPFSCluster daemons
+    shell: IPFS_CLUSTER_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/.ipfs-cluster
+      nohup IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/ipfs-cluster-service
+      daemon >/dev/null 2>&1 &
+- gather_facts: false
+  hosts: IPFSCluster1_starter
+  tasks:
+  - name: Make IPFSCluster service folder
+    shell: mkdir -p IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service
+  - name: Make IPFSCluster control folder
+    shell: mkdir -p IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-ctl
+  - copy:
+      dest: IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/ipfs-cluster-service
+      src: kubo/ipfs-cluster-service/ipfs-cluster-service
+    name: Copying IPFSCluster service binary
+  - copy:
+      dest: IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-ctl/ipfs-cluster-ctl
+      src: kubo/ipfs-cluster-ctl/ipfs-cluster-ctl
+    name: Copying IPFSCluster ctl binary
+  - name: Authorize execution of IPFSCluster binary
+    shell: chmod u+x IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/ipfs-cluster-service
+  - name: Initiliaze IPFSCluster
+    shell: IPFS_CLUSTER_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/.ipfs-cluster
+      IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/ipfs-cluster-service
+      init --consensus crdt &
+  - name: Start IPFSCluster
+    shell: IPFS_CLUSTER_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/.ipfs-cluster
+      nohup IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/ipfs-cluster-service
+      daemon >/dev/null 2>&1 &
+  - name: Display peerID
+    register: BootstrapID
+    shell: 'IPFS_PATH=IPFS_nodes/{{ hostvars[inventory_hostname][''label''] }}/kubo/.ipfs
+      IPFS_nodes/{{ hostvars[inventory_hostname][''label''] }}/kubo/ipfs config show
+      | grep "PeerID" '
+  - name: Display cluster secret
+    register: cluster_secret
+    shell: cat IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/.ipfs-cluster/service.json
+      | grep secret
+  - copy:
+      content: '{{ BootstrapID.stdout_lines }}'
+      dest: id_secret/bootstrap_id.txt
+    delegate_to: localhost
+    name: Write peerID output to local file
+  - copy:
+      content: '{{ cluster_secret.stdout_lines }}'
+      dest: id_secret/cluster_secret.txt
+    delegate_to: localhost
+    name: write cluster secret output to local file
+  - delegate_to: localhost
+    name: Format bootstrap ipfs ID
+    shell: python3 bootstrap_parser.py {{hostvars[inventory_hostname]['label_ip']}}
+- gather_facts: false
+  hosts: IPFSCluster1
+  tasks:
+  - name: Make IPFSCluster folder
+    shell: mkdir -p IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service
+  - name: Make IPFSCluster control folder
+    shell: mkdir -p IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-ctl
+  - copy:
+      dest: IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/ipfs-cluster-service
+      src: kubo/ipfs-cluster-service/ipfs-cluster-service
+    name: Copying IPFSCluster service binary
+  - copy:
+      dest: IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-ctl/ipfs-cluster-ctl
+      src: kubo/ipfs-cluster-ctl/ipfs-cluster-ctl
+    name: Copying IPFSCluster ctl binary
+  - name: Authorize execution of IPFSCluster ctl binary
+    shell: chmod u+x IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-ctl/ipfs-cluster-ctl
+  - name: Authorize execution of IPFSCluster binary
+    shell: chmod u+x IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/ipfs-cluster-service
+  - name: Initiliaze IPFSCluster
+    shell: IPFS_CLUSTER_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/.ipfs-cluster
+      IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/ipfs-cluster-service
+      init --consensus crdt
+  - name: Add bootstrap to peerstore
+    shell: echo "{{ bootstrap_id }}" > IPFS_nodes/{{ hostvars[inventory_hostname]['label']
+      }}/ipfs-cluster-service/.ipfs-cluster/peerstore
+  - copy:
+      dest: IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/.ipfs-cluster/cluster_secret_adder.py
+      src: kubo/cluster_secret_adder.py
+    name: Copy python script for secret edition
+  - name: authorize execution of python secret adder
+    shell: chmod u+x IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/.ipfs-cluster/cluster_secret_adder.py
+  - name: Change cluster secret
+    shell: python3 IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/.ipfs-cluster/cluster_secret_adder.py
+      {{ cluster_secret }} IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/.ipfs-cluster/service.json
+  - name: Start IPFSCluster
+    shell: IPFS_CLUSTER_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/.ipfs-cluster
+      nohup IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/ipfs-cluster-service
+      daemon >/dev/null 2>&1 &
+  vars:
+    bootstrap_id: '{{lookup(''file'',''id_secret/bootstrap_id.txt'')}}'
+    cluster_secret: '{{lookup(''file'', ''id_secret/cluster_secret.txt'')}}'

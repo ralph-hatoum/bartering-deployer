@@ -1,0 +1,5 @@
+- hosts: IPFS-nodes
+  gather_facts: no
+  tasks:
+    - name: Delete folders
+      shell: rm -r IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}
