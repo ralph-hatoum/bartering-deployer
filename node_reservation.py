@@ -6,14 +6,17 @@ import datetime
 site = "lyon"
 cluster = "taurus"
 timeout = 1 #timeout in minutes for the job to stay on 
+walltime = "01:00"
+number_of_nodes = 3
+command = ""
 
 """curl -i https://api.grid5000.fr/stable/sites/grenoble/jobs?pretty -X POST -H'Content-Type: application/json' -d '{"resources": "nodes=2,walltime=02:00", "command": "while(true); do sleep 5; echo \"awake\"; done"}' """
 
 api_job_url = f"https://api.grid5000.fr/stable/sites/{site}/jobs"
 
 payload = {
-    "resources": "nodes=3,walltime=00:01",
-    "command": "while(true); do sleep 5; echo \"awake\"; done",
+    "resources": f"nodes={number_of_nodes},walltime={walltime}",
+    "command": command,
     "stdout": "api-test-stdout",
     "properties": f"cluster='{cluster}'",
     "name": "api-test"
