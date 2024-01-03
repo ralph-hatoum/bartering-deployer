@@ -12,35 +12,42 @@ command = ""
 
 """curl -i https://api.grid5000.fr/stable/sites/grenoble/jobs?pretty -X POST -H'Content-Type: application/json' -d '{"resources": "nodes=2,walltime=02:00", "command": "while(true); do sleep 5; echo \"awake\"; done"}' """
 
-api_job_url = f"https://api.grid5000.fr/stable/sites/{site}/jobs"
 
-payload = {
-    "resources": f"nodes={number_of_nodes},walltime={walltime}",
-    "command": command,
-    "stdout": "api-test-stdout",
-    "properties": f"cluster='{cluster}'",
-    "name": "api-test"
-}
+def reserve_nodes(site, cluster, timeout, number_of_nodes, command):
+    api_job_url = f"https://api.grid5000.fr/stable/sites/{site}/jobs"
 
-job = requests.post(api_job_url, data=payload).json()
-print(job)
-job_id = job["uid"]
+    payload = {
+        "resources": f"nodes={number_of_nodes},walltime={walltime}",
+        "command": command,
+        "stdout": "api-test-stdout",
+        "properties": f"cluster='{cluster}'",
+        "name": "api-test"
+    }
 
-current_time = datetime.datetime.now()
+    job = requests.post(api_job_url, data=payload).json()
+    print(job)
+    job_id = job["uid"]
 
-while datetime.datetime.now() < current_time + datetime.timedelta(minutes=timeout):
-    time.sleep(5)
-    job_info = requests.get(api_job_url+f"/{job_id}").json()
-    state = job_info['state']
-    if state == "running":
-        break
+    current_time = datetime.datetime.now()
 
-if state!="running":
-    print("Timed out")
-    # TODO delete job from queue
-    exit(-1)
+    while datetime.datetime.now() < current_time + datetime.timedelta(minutes=timeout):
+        time.sleep(5)
+        job_info = requests.get(api_job_url+f"/{job_id}").json()
+        state = job_info['state']
+        if state == "running":
+            break
 
-assigned_nodes = job_info["assigned_nodes"]
+    if state!="running":
+        print("Timed out")
+        # TODO delete job from queue
+        return 
+
+    assigned_nodes = job_info["assigned_nodes"]
+
+    return assigned_nodes
+
+
+
 
 
 
