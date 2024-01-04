@@ -42,7 +42,9 @@ print("\n\033[0;32mYour configuration passed the checks !\033[0m\n")
 
 print(f"\nThe network needs {nodes_needed} nodes -- checking for availability ...\n")
 
-available_hosts = ping_all_machines(nodes_needed)
+#available_hosts = ping_all_machines(nodes_needed)
+
+available_hosts = node_reservation.reserve_nodes("lyon", "taurus", nodes_needed, 1, "")
 
 if len(available_hosts) < nodes_needed:
     print(f"\n\033[91mError : Not enough available nodes -- found {len(available_hosts)}, needed {nodes_needed} -- please change your configuration accordingly.\033[0m\n")
