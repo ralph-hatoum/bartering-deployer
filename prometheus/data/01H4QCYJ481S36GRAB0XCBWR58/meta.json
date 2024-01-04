@@ -1,0 +1,17 @@
+{
+	"ulid": "01H4QCYJ481S36GRAB0XCBWR58",
+	"minTime": 1688361892133,
+	"maxTime": 1688364000000,
+	"stats": {
+		"numSamples": 65465,
+		"numSeries": 480,
+		"numChunks": 480
+	},
+	"compaction": {
+		"level": 1,
+		"sources": [
+			"01H4QCYJ481S36GRAB0XCBWR58"
+		]
+	},
+	"version": 1
+}
