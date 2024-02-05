@@ -3,7 +3,6 @@ import requests
 import time
 import datetime
 
-from grid5000 import Grid5000
 
 site = "lyon"
 cluster = "taurus"
@@ -39,8 +38,13 @@ def submit_job(gk, site, timeout, number_of_nodes, env, res_duration):
         time.sleep(10)
 
     print(deployment.result)
-
+    print(f"Job id : {job.uid}")
     return job, deployment.result
+
+
+
+def job_killer():
+    return  
 
 
 

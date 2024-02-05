@@ -1,5 +1,5 @@
 import json
-from python_scripts.pinger import ping_all_machines
+# from python_scripts.pinger import ping_all_machines
 from prometheus.prometheus_conf_writer import prometheus_conf_writer
 import yaml
 import os
