@@ -3,6 +3,8 @@ import requests
 import time
 import datetime
 
+from grid5000 import Grid5000
+
 site = "lyon"
 cluster = "taurus"
 timeout = 1 #timeout in minutes for the job to stay on 
@@ -11,6 +13,28 @@ number_of_nodes = 3
 command = ""
 
 """curl -i https://api.grid5000.fr/stable/sites/grenoble/jobs?pretty -X POST -H'Content-Type: application/json' -d '{"resources": "nodes=2,walltime=02:00", "command": "while(true); do sleep 5; echo \"awake\"; done"}' """
+
+
+def submit_job(site, timeout, number_of_nodes, env):
+    site = gk.sites[site]
+
+    job = site.jobs.create({"name": "pyg5k",
+                        "command": "sleep 3600",
+                        "types": ["deploy"]})
+    
+    while job.state != "running":
+        job.refresh()
+        print("Waiting the job [%s] to be running" % job.uid)
+        time.sleep(10)
+
+    print("Assigned nodes : %s" % job.assigned_nodes)
+
+    deployment = site.deployments.create({"nodes": job.assigned_nodes,
+                                      "environment": env})
+
+
+
+
 
 
 def reserve_nodes(site, cluster, timeout, number_of_nodes, command):
