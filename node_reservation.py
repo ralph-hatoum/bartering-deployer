@@ -15,12 +15,13 @@ command = ""
 """curl -i https://api.grid5000.fr/stable/sites/grenoble/jobs?pretty -X POST -H'Content-Type: application/json' -d '{"resources": "nodes=2,walltime=02:00", "command": "while(true); do sleep 5; echo \"awake\"; done"}' """
 
 
-def submit_job(site, timeout, number_of_nodes, env):
+def submit_job(gk, site, timeout, number_of_nodes, env, res_duration):
     site = gk.sites[site]
 
-    job = site.jobs.create({"name": "pyg5k",
+    job = site.jobs.create({"name": "bartering-deployment",
                         "command": "sleep 3600",
-                        "types": ["deploy"]})
+                        "types": ["deploy"],
+                        "resources": f"nodes={number_of_nodes},walltime={res_duration}"})
     
     while job.state != "running":
         job.refresh()
@@ -32,6 +33,14 @@ def submit_job(site, timeout, number_of_nodes, env):
     deployment = site.deployments.create({"nodes": job.assigned_nodes,
                                       "environment": env})
 
+    while deployment.status != "terminated":
+        deployment.refresh()
+        print("Waiting for the deployment [%s] to be finished" % deployment.uid)
+        time.sleep(10)
+
+    print(deployment.result)
+
+    return job, deployment.result
 
 
 

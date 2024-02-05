@@ -4,6 +4,7 @@ from prometheus.prometheus_conf_writer import prometheus_conf_writer
 import yaml
 import os
 import node_reservation
+from grid5000 import Grid5000
 
 
 ## TODO GENERATE SWARM KEY !!!
@@ -42,9 +43,19 @@ print("\n\033[0;32mYour configuration passed the checks !\033[0m\n")
 
 print(f"\nThe network needs {nodes_needed} nodes -- checking for availability ...\n")
 
+conf_file = os.path.join(os.environ.get("HOME"), ".python-grid5000.yaml")
+
+gk = Grid5000.from_yaml(conf_file)
+
+job, result = node_reservation.submit_job(gk, "lyon", "", nodes_needed, "debian11-min")
+
+# TODO test if deployment OK (on result var), if not need to del job and abort test
+
+available_hosts = job.assigned_nodes
+
 #available_hosts = ping_all_machines(nodes_needed)
 
-available_hosts = node_reservation.reserve_nodes("lyon", "taurus", nodes_needed, 1, "")
+# available_hosts = node_reservation.reserve_nodes("lyon", "taurus", nodes_needed, 1, "")
 
 if len(available_hosts) < nodes_needed:
     print(f"\n\033[91mError : Not enough available nodes -- found {len(available_hosts)}, needed {nodes_needed} -- please change your configuration accordingly.\033[0m\n")
