@@ -61,7 +61,7 @@ conf_file = os.path.join(os.environ.get("HOME"), ".python-grid5000.yaml")
 
 gk = Grid5000.from_yaml(conf_file)
 
-job, result = node_reservation.submit_job(gk, "lyon", "", nodes_needed, "debian11-min")
+job, result = node_reservation.submit_job(gk, "lyon", "", nodes_needed, "debian11-min","0:03:30")
 
 # TODO test if deployment OK (on result var), if not need to del job and abort test
 

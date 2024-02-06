@@ -2,9 +2,53 @@
     "Credentials":"root",
     "IPFS_network":
     {
-        "Nodes": 3,
+        "Nodes": 4,
         "GCPeriod": "15m",
         "MaxStorage": "15kb"
         
+    },
+    "Bartering_network": 
+    {
+        "FailureModel": "weibull",
+        "peers":
+        {
+            "1": 
+            {
+                "Nodes": 2,
+                "conf": 
+                {
+                "TotalStorage": 150000,
+                "NodeProfile": "peer",
+                "BarteringInitialScore": 10.0,
+                "BarteringFactorAcceptableRatio": 0.3,
+                "BarteringRatioIncreaseRate": 0.1,
+                "StoragerequestsScoreDecreaseRefusedStoReq": 0.8,
+                "StoragetestingTimerTimeoutSec": 5,
+                "StoragetestingTestingPeriod": 20,
+                "StoragetestingFailedTestTimeoutDecrease": 0.5,
+                "StoragetestingFailedTestWrongAnsDecrease": 0.7,
+                "StoragetestingPassedTestIncrease":0.2
+                }
+            }, 
+            "2": 
+            {
+                "Nodes": 2,
+                "conf": 
+                {
+                "TotalStorage": 1500,
+                "NodeProfile": "peer",
+                "BarteringInitialScore": 10.0,
+                "BarteringFactorAcceptableRatio": 0.312312,
+                "BarteringRatioIncreaseRate": 0.12132,
+                "StoragerequestsScoreDecreaseRefusedStoReq": 0.8,
+                "StoragetestingTimerTimeoutSec": 5,
+                "StoragetestingTestingPeriod": 2013,
+                "StoragetestingFailedTestTimeoutDecrease": 0.5131,
+                "StoragetestingFailedTestWrongAnsDecrease": 0.7,
+                "StoragetestingPassedTestIncrease":0.2
+                }
+            }
+
+        }
     }
 }

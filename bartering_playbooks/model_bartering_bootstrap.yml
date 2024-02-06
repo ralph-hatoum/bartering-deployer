@@ -1,0 +1,14 @@
+- hosts: #BARTERING bootstrap
+  gather_facts: no
+  tasks:
+    - name: Make bartering bootstrap folder
+      shell : mkdir -p bartering-bootstrap/
+    - name: Copy bartering bootstrap binary
+      copy:
+        src: bartering-protocol/bartering-bootstrap
+        dest: bartering/
+    - name : Allow bootstrap binary to be executable
+      shell: chmod u+x bartering/bartering-bootstrap
+    - name: Start bootstrap
+      shell: bartering/bartering-bootstrap
+    
