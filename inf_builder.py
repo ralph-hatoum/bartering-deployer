@@ -27,6 +27,20 @@ try:
 except Exception as e:
     print("\nNo IPFSclusters detected in the configuration!\n")
 
+flag_bartering = False
+try:
+    clusters = config["Bartering_network"]
+    flag_bartering = True
+except Exception as e:
+    print("\nNo bartering nodes detected in the configuration!\n")
+
+if flag_bartering:
+    bartering_configs = config["Bartering_network"]["peers"]
+    total_nodes_bartering = sum([bartering_configs[key]["Nodes"] for key in bartering_configs.keys()])
+    if total_nodes_bartering > nodes_needed:
+        print("\n\033[91mError : you have defined more bartering nodes than there are nodes in the network. Please fix the configuration.\033[0m\n")
+        exit(-1)
+
 
 if flag_clusters_to_build:
     clusters_to_build = []
@@ -53,18 +67,12 @@ job, result = node_reservation.submit_job(gk, "lyon", "", nodes_needed, "debian1
 
 for node in result.keys():
     print(f"node {node} : ",result[node]["state"])
-    if result[node]["state"]=='OK':
-        nodes.append(node)
-    else :
+    if result[node]["state"]!='OK':
         print("One of the nodes not OK - cannot continue job - will delete it")
         os.system(f"oardel {job.uid}")
         exit(-1)
 
 available_hosts = job.assigned_nodes
-
-#available_hosts = ping_all_machines(nodes_needed)
-
-# available_hosts = node_reservation.reserve_nodes("lyon", "taurus", nodes_needed, 1, "")
 
 if len(available_hosts) < nodes_needed:
     print(f"\n\033[91mError : Not enough available nodes -- found {len(available_hosts)}, needed {nodes_needed} -- please change your configuration accordingly.\033[0m\n")
@@ -80,9 +88,9 @@ print(f"\nBootstrap chosen : {bootstrap_node}\n")
 
 
 # Edit prometheus.yml
-print("\nWriting Prometheus yaml file for data collection ...\n")
-prometheus_conf_writer(available_hosts, 9100, "./prometheus/prometheus.yml")
-print("\n\033[0;32mPrometheus file succesfully written ! \033[0m\n")
+# print("\nWriting Prometheus yaml file for data collection ...\n")
+# prometheus_conf_writer(available_hosts, 9100, "./prometheus/prometheus.yml")
+# print("\n\033[0;32mPrometheus file succesfully written ! \033[0m\n")
 
 available_hosts.remove(bootstrap_node)
 
@@ -102,6 +110,51 @@ with open("hosts/hosts.ini","w") as f:
 print("\n\033[0;32mhosts.ini file successfully built!\033[0m\n")
     
 available_hosts.append(bootstrap_node)
+
+if flag_bartering:
+    print("\nProvisioning nodes for Bartering ...")
+
+    # Open model playbook 
+    f = open("playbooks/playbook_backup.yml", "r") 
+    existing_playbook = yaml.safe_load(f)
+    f.close()
+
+    with open("hosts/hosts.ini","a") as f:
+        counter = 0
+        f.write(f"[BarteringBootstrap]\n{username}@{available_hosts[0]} label=bartering-bootstrap label_ip={available_hosts[0]}\n")
+
+        # Open model bootstrap playbook
+        bootstrap_file = open("bartering_playbooks/model_bartering_bootstrap.yml", "r") 
+        base_bootstrap = yaml.safe_load(bootstrap_file)
+        bootstrap_file.close()
+
+        # Modify whatever needs to be
+        base_bootstrap[0]['hosts']=f"BarteringBootstrap"
+
+        # Write into existing data
+        existing_playbook.append(base_bootstrap)
+
+
+        for key in bartering_configs.keys():
+            f.write(f"[BarteringNodes{key}]\n")
+            number_of_nodes = bartering_configs[key]["Nodes"]
+            n = 0
+
+            base_node_file = open("bartering_playbooks/model_bartering_nodes.yml", "r") 
+            base_node = yaml.safe_load(base_node_file)
+            base_node_file.close()
+
+            base_node[0]['hosts']=f"BarteringNodes{key}"
+
+            existing_playbook.append(base_node)
+
+            while n < number_of_nodes:
+                f.write(f"{username}@{available_hosts[counter]} label=bartering-node{counter} label_ip={available_hosts[counter]}\n")
+                n+=1
+                counter +=1
+    with open("playbooks/playbook.yml","w") as f:
+        yaml.dump(existing_playbook,f)
+
 
 
 if flag_clusters_to_build:
@@ -164,8 +217,8 @@ if flag_clusters_to_build:
 
 #TODO ADD SUPPORT FOR DIFFERENT CONFIG FOR EACH NODE
 
-print("\nLaunching playbook ...")
+# print("\nLaunching playbook ...")
 
 
-os.system("ansible-playbook playbooks/playbook.yml -i hosts/hosts.ini --ask-pass")
+# os.system("ansible-playbook playbooks/playbook.yml -i hosts/hosts.ini --ask-pass")
 
