@@ -1,5 +1,5 @@
 {
-    "Credentials":"example",
+    "Credentials":"root",
     "IPFS_network":
     {
         "Nodes": 3,

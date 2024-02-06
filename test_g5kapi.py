@@ -49,3 +49,17 @@ job, result = submit_job(gk,site, "",3,"debian11-min","0:03:30")
 print("result ",result)
 
 print("job ",job)
+
+nodes = []
+
+for node in result.keys():
+    print(result[node]["state"])
+    if result[node]["state"]=='OK':
+        nodes.append(node)
+    else :
+        print("One of the nodes not OK - cannot continue job - will delete it")
+        os.system(f"oardel {job.uid}")
+        exit(-1)
+        break
+
+print(nodes)

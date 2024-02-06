@@ -51,6 +51,15 @@ job, result = node_reservation.submit_job(gk, "lyon", "", nodes_needed, "debian1
 
 # TODO test if deployment OK (on result var), if not need to del job and abort test
 
+for node in result.keys():
+    print(f"node {node} : ",result[node]["state"])
+    if result[node]["state"]=='OK':
+        nodes.append(node)
+    else :
+        print("One of the nodes not OK - cannot continue job - will delete it")
+        os.system(f"oardel {job.uid}")
+        exit(-1)
+
 available_hosts = job.assigned_nodes
 
 #available_hosts = ping_all_machines(nodes_needed)
