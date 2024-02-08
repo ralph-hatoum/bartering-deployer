@@ -10,43 +10,35 @@
 - hosts: Bootstrap-node
   gather_facts: no
   tasks:
-    - name: Make node folder
-      shell: mkdir -p IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}
-    - name: Make kubo folder
-      shell: mkdir -p IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo
+    - name : Download IPFS
+      shell: wget https://dist.ipfs.tech/kubo/v0.26.0/kubo_v0.26.0_linux-amd64.tar.gz
     
-    ## COPYING IPFS BINARY ##
-    - copy:
-        src: kubo/kubo/ipfs
-        dest: IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs
+    - name : unzip IPFS
+      shell: tar -xvzf kubo_v0.26.0_linux-amd64.tar.gz
 
-    ## COPYING DATA COLLECTION PYTHON SCRIPT ##
-    # - copy:
-    #     src: kubo/data-collection-node.py
-    #     dest: IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/data-collection-node.py
+    - name: run installation 
+      shell: bash kubo/install.sh
 
     ## COPYING PROMETHEUS NODE EXPORTER
     - copy:
         src: kubo/node_exporter.py
-        dest: IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/node_exporter.py
-
-    - name: Authorize execution of ipfs binary
-      shell: chmod u+x IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs
+        dest: node_exporter.py
 
     - name: Initialize IPFS node
-      shell: "IPFS_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs init"
+      shell: ipfs init
       ignore_errors: true
     ## COPYING SWARM KEY ## 
+    
     - copy: 
         src : id_secret/swarm.key
-        dest: IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs/swarm.key
+        dest: ~/.ipfs/swarm.key
 
     - name: Retrieving Bootstrap's ID
-      shell: "IPFS_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs config show | grep \"PeerID\" "
+      shell: ipfs config show | grep "PeerID"
       register: BootstrapID
 
     - name: Delete all bootstraps
-      shell: "IPFS_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs bootstrap rm --all"
+      shell: ipfs bootstrap rm --all
 
     - name: Display outputs
       debug: var=BootstrapID.stdout_lines
@@ -60,19 +52,12 @@
     - name: Format bootstrap ipfs ID
       shell: python3 bootstrap_parser.py {{hostvars[inventory_hostname]['label_ip']}}
       delegate_to: localhost
-
-    - name: Delete README file that is protected in writing
-      expect:
-        command: rm -f IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs/blocks/_README
-        responses:
-          Question:
-            - 'y'
     
     - name: Start IPFS dameons
-      shell: "IPFS_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs nohup IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs daemon --enable-gc >/dev/null 2>&1 &"
+      shell: nohup ipfs daemon --enable-gc >/dev/null 2>&1 &
     
     - name: Start prometheus node exporter
-      shell: nohup python3 IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/node_exporter.py {{ hostvars[inventory_hostname]['label'] }} >/dev/null 2>&1 &
+      shell: nohup python3 node_exporter.py {{ hostvars[inventory_hostname]['label'] }} >/dev/null 2>&1 &
 
 
 
@@ -82,62 +67,36 @@
   gather_facts: no
   tasks:
 
-    - name: Make node folder
-      shell: mkdir -p IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}
-    - name: Make kubo folder
-      shell: mkdir -p IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo
+    - name : Download IPFS
+      shell: wget https://dist.ipfs.tech/kubo/v0.26.0/kubo_v0.26.0_linux-amd64.tar.gz
     
-    ## COPYING IPFS BINARY ##
-    - copy:
-        src: kubo/kubo/ipfs
-        dest: IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs
+    - name : unzip IPFS
+      shell: tar -xvzf kubo_v0.26.0_linux-amd64.tar.gz
 
-    ## COPYING DATA COLLECTION PYTHON SCRIPT ##
-    # - copy:
-    #     src: kubo/data-collection-node.py
-    #     dest: IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/data-collection-node.py
+    - name: run installation 
+      shell: bash kubo/install.sh
 
-    ## COPYING PROMETHEUS NODE EXPORTER
     - copy:
         src: kubo/node_exporter.py
-        dest: IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/node_exporter.py
-
-    - name: Authorize execution of ipfs binary
-      shell: chmod u+x IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs
+        dest: node_exporter.py
 
     - name: Initialize IPFS node
-      shell: "IPFS_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs init"
-      ignore_errors: true
+      shell: ipfs init
+      ignore_errors: true 
 
     ## COPYING SWARM KEY ## 
     - copy: 
         src : id_secret/swarm.key
-        dest: IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs/swarm.key
+        dest: ~/.ipfs/swarm.key
 
     - name: Delete all bootstraps
-      shell: "IPFS_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs bootstrap rm --all"
+      shell: ipfs bootstrap rm --all
 
     - name: Add bootstrap node
-      shell: "IPFS_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs bootstrap add {{ bootstrap_id }}"
-    
-    - name: Delete README file that is protected in writing
-      expect:
-        command: rm -f IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs/blocks/_README
-        responses:
-          Question:
-            - 'y'
+      shell: ipfs bootstrap add {{ bootstrap_id }}
 
     - name: Start IPFS dameons
-      shell: "IPFS_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/.ipfs nohup IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/ipfs daemon --enable-gc >/dev/null 2>&1 &"
-    # - name: Start data collector 
-    #   shell: nohup python3 IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/data-collection-node.py {{ hostvars[inventory_hostname]['label_ip'] }} >/dev/null 2>&1 &
+      shell: ipfs daemon --enable-gc >/dev/null 2>&1 &
 
     - name: Start prometheus node exporter
-      shell: nohup python3 IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/kubo/node_exporter.py {{ hostvars[inventory_hostname]['label'] }} >/dev/null 2>&1 &
-
-- hosts: IPFScluster-nodes
-  gather_facts: no
-  tasks:
-    - name : Start IPFSCluster daemons
-      shell: IPFS_CLUSTER_PATH=IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/.ipfs-cluster nohup IPFS_nodes/{{ hostvars[inventory_hostname]['label'] }}/ipfs-cluster-service/ipfs-cluster-service daemon >/dev/null 2>&1 &
-
+      shell: nohup python3 node_exporter.py {{ hostvars[inventory_hostname]['label'] }} >/dev/null 2>&1 &
