@@ -132,7 +132,7 @@ if flag_bartering:
         base_bootstrap[0]['hosts']=f"BarteringBootstrap"
 
         # Write into existing data
-        existing_playbook.append(base_bootstrap)
+        existing_playbook.append(base_bootstrap[0])
 
 
         for key in bartering_configs.keys():
@@ -146,7 +146,7 @@ if flag_bartering:
 
             base_node[0]['hosts']=f"BarteringNodes{key}"
 
-            existing_playbook.append(base_node)
+            existing_playbook.append(base_node[0])
 
             while n < number_of_nodes:
                 f.write(f"{username}@{available_hosts[counter]} label=bartering-node{counter} label_ip={available_hosts[counter]}\n")
@@ -217,8 +217,8 @@ if flag_clusters_to_build:
 
 #TODO ADD SUPPORT FOR DIFFERENT CONFIG FOR EACH NODE
 
-# print("\nLaunching playbook ...")
+print("\nLaunching playbook ...")
 
 
-# os.system("ansible-playbook playbooks/playbook.yml -i hosts/hosts.ini --ask-pass")
+os.system("ansible-playbook playbooks/playbook.yml -i hosts/hosts.ini --ask-pass")
 

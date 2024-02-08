@@ -2,17 +2,17 @@
   gather_facts: no
   tasks:
     - name: Make bartering folder
-      shell : mkdir -p bartering/hostvars[inventory_hostname]['label']
+      shell : mkdir -p bartering/{{ hostvars[inventory_hostname]['label'] }}
     - name: Copy bartering binary
       copy:
         src: bartering-protocol/bartering
-        dest: bartering/hostvars[inventory_hostname]['label']
+        dest: bartering/{{ hostvars[inventory_hostname]['label'] }}
     - name: Copy bartering config file
       copy:
         src: bartering-protocol/{{ inventory_group_name }}/conf.yaml
-        dest: bartering/hostvars[inventory_hostname]['label']
+        dest: bartering/{{ hostvars[inventory_hostname]['label'] }}
     - name : Authorize execution of bartering binary
-      shell: chmod u+x bartering/hostvars[inventory_hostname]['label']/bartering
+      shell: chmod u+x bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering
     - name: Run bartering protocol
-      shell: bartering/hostvars[inventory_hostname]['label']/bartering
+      shell: bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering
     

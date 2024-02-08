@@ -11,4 +11,3 @@
       shell: chmod u+x bartering/bartering-bootstrap
     - name: Start bootstrap
       shell: bartering/bartering-bootstrap
-    
