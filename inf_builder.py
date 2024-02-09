@@ -61,16 +61,29 @@ conf_file = os.path.join(os.environ.get("HOME"), ".python-grid5000.yaml")
 
 gk = Grid5000.from_yaml(conf_file)
 
-job, result = node_reservation.submit_job(gk, "lyon", "", nodes_needed, "debian11-min","0:03:30")
+# job, result = node_reservation.submit_job(gk, "lyon", "", nodes_needed, "debian11-min","0:03:30")
+
+job = node_reservation.submit_job_and_only_job(gk, "lyon", "", nodes_needed, "debian11-min","0:15:30")
 
 # TODO test if deployment OK (on result var), if not need to del job and abort test
 
-for node in result.keys():
-    print(f"node {node} : ",result[node]["state"])
-    if result[node]["state"]!='OK':
-        print("One of the nodes not OK - cannot continue job - will delete it")
-        os.system(f"oardel {job.uid}")
-        exit(-1)
+# for node in result.keys():
+#     print(f"node {node} : ",result[node]["state"])
+#     if result[node]["state"]!='OK':
+#         print("One of the nodes not OK - cannot continue job - will delete it")
+#         os.system(f"oardel {job.uid}")
+#         exit(-1)
+
+with open("machines.txt","w") as f:
+    for node in job.assigned_nodes:
+        f.write(node)
+        f.write('\n')
+
+# print(job)
+# print(job.uid) n           
+# print(job.assigned_nodes)
+
+os.system("kadeploy3 -f machines.txt debian11-min")
 
 available_hosts = job.assigned_nodes
 

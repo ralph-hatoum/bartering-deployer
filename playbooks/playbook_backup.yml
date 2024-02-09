@@ -93,7 +93,7 @@
       shell: ipfs bootstrap rm --all
 
     - name: Add bootstrap node
-      shell: ipfs bootstrap add {{ bootstrap_id }}
+      shell: ipfs bootstrap add {{ bootstrap_id }} #TODO CHANGE IT IS NOT WORKING (NEED TO UPDATE PYTHON SCRIPT TO FORMAT BEACAUSE WE ARE NOT USING IPS BUT ADDRRSESS,THAT NEED,TO BE RESOLVED THRU DNS)
 
     - name: Start IPFS dameons
       shell: ipfs daemon --enable-gc >/dev/null 2>&1 &

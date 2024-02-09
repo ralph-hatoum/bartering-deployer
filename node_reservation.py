@@ -14,6 +14,23 @@ command = ""
 """curl -i https://api.grid5000.fr/stable/sites/grenoble/jobs?pretty -X POST -H'Content-Type: application/json' -d '{"resources": "nodes=2,walltime=02:00", "command": "while(true); do sleep 5; echo \"awake\"; done"}' """
 
 
+def submit_job_and_only_job(gk, site, timeout, number_of_nodes, env, res_duration):
+    site = gk.sites[site]
+
+    job = site.jobs.create({"name": "bartering-deployment",
+                        "command": "sleep 3600",
+                        "types": ["deploy"],
+                        "resources": f"nodes={number_of_nodes},walltime={res_duration}"})
+    
+    while job.state != "running":
+        job.refresh()
+        print("Waiting the job [%s] to be running" % job.uid)
+        time.sleep(10)
+
+    print("Assigned nodes : %s" % job.assigned_nodes)
+
+    return job
+
 def submit_job(gk, site, timeout, number_of_nodes, env, res_duration):
     site = gk.sites[site]
 
