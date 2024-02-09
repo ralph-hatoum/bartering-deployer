@@ -1,10 +1,17 @@
 import os
 import sys
+import subprocess
 
 args = sys.argv
 
 bootstrap_ip_address=args[1]
 
+
+def get_ip_from_domain(bootstrap_domain):
+    out = subprocess.check_output(f"dig +short {bootstrap_domain}",shell=True)
+    return out.decode()[:-1]
+
+bootstrap_ip_address = get_ip_from_domain(bootstrap_ip_address)
 
 # ###   PARSE BOOTSTRAP ID ###
 with open("id_secret/bootstrap_id.txt","r") as f:

@@ -233,5 +233,5 @@ if flag_clusters_to_build:
 print("\nLaunching playbook ...")
 
 
-os.system("ansible-playbook playbooks/playbook.yml -i hosts/hosts.ini --ask-pass")
+os.system("ansible-playbook playbooks/playbook.yml -i hosts/hosts.ini")
 
