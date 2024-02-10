@@ -54,7 +54,20 @@
       delegate_to: localhost
     
     - name: Start IPFS dameons
-      shell: nohup ipfs daemon --enable-gc >/dev/null 2>&1 &
+      shell: nohup ipfs daemon --enable-gc &
+
+    - copy:
+        src: kubo/requirements.txt
+        dest: requirements.txt
+    
+    - name: Get pip
+      shell: wget https://bootstrap.pypa.io/get-pip.py
+    
+    - name: Install pip
+      shell: python3 get-pip.py
+
+    - name: Install requirements
+      shell: pip install -r requirements.txt
     
     - name: Start prometheus node exporter
       shell: nohup python3 node_exporter.py {{ hostvars[inventory_hostname]['label'] }} >/dev/null 2>&1 &
@@ -93,10 +106,24 @@
       shell: ipfs bootstrap rm --all
 
     - name: Add bootstrap node
-      shell: ipfs bootstrap add {{ bootstrap_id }} #TODO CHANGE IT IS NOT WORKING (NEED TO UPDATE PYTHON SCRIPT TO FORMAT BEACAUSE WE ARE NOT USING IPS BUT ADDRRSESS,THAT NEED,TO BE RESOLVED THRU DNS)
+      shell: ipfs bootstrap add {{ bootstrap_id }} 
 
     - name: Start IPFS dameons
-      shell: ipfs daemon --enable-gc >/dev/null 2>&1 &
+      shell: nohup ipfs daemon --enable-gc >/dev/null 2>&1 &
 
     - name: Start prometheus node exporter
       shell: nohup python3 node_exporter.py {{ hostvars[inventory_hostname]['label'] }} >/dev/null 2>&1 &
+
+    - name: apt update
+      shell : apt update
+    - name : install lsof
+      shell: apt install -y lsof
+
+- hosts: Bootstrap-node
+  tasks:
+    - name: Get bartering boostrap IP
+      shell: python3 bartering_bootstrap_ip.py {{ groups['BarteringBootstrap'][0] }}
+      delegate_to: localhost
+      register: boostrapIP
+    - name: Display output
+      debug: var=boostrapIP.stdout_lines

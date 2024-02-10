@@ -13,6 +13,8 @@ api_job_url = f"https://api.grid5000.fr/stable/sites/{site_id}/jobs"
 
 api_deployment_url = f"https://api.grid5000.fr/stable/sites/{site_id}/deployments"
 
+""" https://api.grid5000.fr/stable/sites/lyon/deployments"""
+
 payload = {
     "resources": "nodes=1,walltime=00:10:00",
     "command": "sleep 600",

@@ -60,6 +60,5 @@ for node in result.keys():
         print("One of the nodes not OK - cannot continue job - will delete it")
         os.system(f"oardel {job.uid}")
         exit(-1)
-        break
 
 print(nodes)

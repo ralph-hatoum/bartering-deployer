@@ -1,13 +1,15 @@
 - hosts: #BARTERING bootstrap
   gather_facts: no
+  vars: 
+    bootstrap_ip: "{{lookup('file','bartering-protocol/bootstrap_ip.txt')}}"
   tasks:
     - name: Make bartering bootstrap folder
       shell : mkdir -p bartering-bootstrap/
     - name: Copy bartering bootstrap binary
       copy:
-        src: bartering-protocol/bartering-bootstrap
-        dest: bartering/
+        src: bartering-protocol/bootstrap
+        dest: bartering-bootstrap/
     - name : Allow bootstrap binary to be executable
-      shell: chmod u+x bartering/bartering-bootstrap
+      shell: chmod u+x bartering-bootstrap/bootstrap
     - name: Start bootstrap
-      shell: bartering/bartering-bootstrap
+      shell: nohup bartering-bootstrap/bootstrap {{ bootstrap_ip }} &

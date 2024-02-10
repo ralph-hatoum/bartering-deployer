@@ -1,5 +1,8 @@
 - hosts: #BARTERING nodes
   gather_facts: no
+  vars: 
+    bootstrap_ip: "{{lookup('file','bartering-protocol/bootstrap_ip.txt')}}"
+    group_name: 
   tasks:
     - name: Make bartering folder
       shell : mkdir -p bartering/{{ hostvars[inventory_hostname]['label'] }}
@@ -9,10 +12,9 @@
         dest: bartering/{{ hostvars[inventory_hostname]['label'] }}
     - name: Copy bartering config file
       copy:
-        src: bartering-protocol/{{ inventory_group_name }}/conf.yaml
+        src: bartering-protocol/{{ group_name }}/conf.yaml
         dest: bartering/{{ hostvars[inventory_hostname]['label'] }}
     - name : Authorize execution of bartering binary
       shell: chmod u+x bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering
     - name: Run bartering protocol
-      shell: bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering
-    
+      shell: nohup bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering {{ bootstrap_ip }} &

@@ -27,6 +27,10 @@ os.system("rm -f bootstrap_id.txt")
 with open("id_secret/bootstrap_id.txt", "w") as f:
     f.write(ipfs_id_full)
 
+with open("id_secret/bootstrap_ip.txt", "w") as f:
+    f.write(bootstrap_ip_address)
+
+
 ## PARSE CLUSTER SECRET ##
 
 with open("id_secret/cluster_secret.txt","r") as f:

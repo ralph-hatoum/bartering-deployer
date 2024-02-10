@@ -5,6 +5,7 @@ import yaml
 import os
 import node_reservation
 from grid5000 import Grid5000
+import bartering_conf_builder
 
 
 ## TODO GENERATE SWARM KEY !!!
@@ -158,6 +159,7 @@ if flag_bartering:
             base_node_file.close()
 
             base_node[0]['hosts']=f"BarteringNodes{key}"
+            base_node[0]['vars']['group_name']=f"BarteringNodes{key}"
 
             existing_playbook.append(base_node[0])
 
@@ -167,6 +169,15 @@ if flag_bartering:
                 counter +=1
     with open("playbooks/playbook.yml","w") as f:
         yaml.dump(existing_playbook,f)
+
+    print("Building bartering configuration files ... ")
+
+    output = bartering_conf_builder.extract_bartering_config("network_config_clusters.json")
+
+    bartering_conf_builder.build_configs(output)
+
+    print("Bartering network good to be deployed")
+
 
 
 
