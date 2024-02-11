@@ -60,14 +60,25 @@
         src: kubo/requirements.txt
         dest: requirements.txt
     
-    - name: Get pip
-      shell: wget https://bootstrap.pypa.io/get-pip.py
-    
-    - name: Install pip
-      shell: python3 get-pip.py
+    - name: PIP INSTALLATION - APT GET UPDATE
+      shell: apt-get update
 
-    - name: Install requirements
-      shell: pip install -r requirements.txt
+    - name: install SUDO
+      shell: apt-get install sudo -y
+
+    - name: setup tools
+      shell: apt-get install python-setuptools -y
+
+    # - name: install pexpect
+    #   pip:
+    #     name: pexpect
+    #   become: yes
+    
+    - name: PIP INSTALLATION
+      shell: apt-get install python3-pip -y
+
+    - name: Install psutil
+      shell: pip install psutil
     
     - name: Start prometheus node exporter
       shell: nohup python3 node_exporter.py {{ hostvars[inventory_hostname]['label'] }} >/dev/null 2>&1 &
