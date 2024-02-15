@@ -5,14 +5,15 @@ import psutil
 import sys
 
 # Define the port number to listen on
-PORT = 9100
+PORT = 9101
 
 args = sys.argv
 
 node_name = args[1]
 
 ROOT = f"IPFS_nodes/{node_name}/kubo"
-FOLDER = f"IPFS_nodes/{node_name}/kubo/.ipfs"
+# FOLDER = f"IPFS_nodes/{node_name}/kubo/.ipfs"
+FOLDER = "."
 
 def getFolderSize(folder):
     total_size = os.path.getsize(folder)
