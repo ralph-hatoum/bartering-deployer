@@ -64,7 +64,7 @@ gk = Grid5000.from_yaml(conf_file)
 
 # job, result = node_reservation.submit_job(gk, "lyon", "", nodes_needed, "debian11-min","0:03:30")
 
-job = node_reservation.submit_job_and_only_job(gk, "lyon", "", nodes_needed, "debian11-min","0:15:30")
+job = node_reservation.submit_job_and_only_job(gk, "lyon", "", nodes_needed, "debian11-min","0:30:30")
 
 # TODO test if deployment OK (on result var), if not need to del job and abort test
 
@@ -102,9 +102,9 @@ print(f"\nBootstrap chosen : {bootstrap_node}\n")
 
 
 # Edit prometheus.yml
-# print("\nWriting Prometheus yaml file for data collection ...\n")
-# prometheus_conf_writer(available_hosts, 9100, "./prometheus/prometheus.yml")
-# print("\n\033[0;32mPrometheus file succesfully written ! \033[0m\n")
+print("\nWriting Prometheus yaml file for data collection ...\n")
+prometheus_conf_writer(available_hosts, 9101, "./prometheus/prometheus.yml")
+print("\n\033[0;32mPrometheus file succesfully written ! \033[0m\n")
 
 available_hosts.remove(bootstrap_node)
 

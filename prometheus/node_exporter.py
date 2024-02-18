@@ -5,7 +5,7 @@ import psutil
 import sys
 
 # Define the port number to listen on
-PORT = 9100
+PORT = 9101
 if len(sys.argv)!=2:
     print("Needs folder as argument - exiting - error")
     exit(-1)
@@ -48,8 +48,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             ipfs_running = is_process_running("ipfs")
 
+            bartering_bootstrap_running = is_process_running("bartering-bootstrap")
+
+            bartering_running = is_process_running("bartering")
+
             # Set the response content
-            response_text = f"ipfs_up {ipfs_running} {current_timestamp} \nipfs_blocks_size {file_size_str} {current_timestamp}"
+            response_text = f"ipfs_up {ipfs_running} {current_timestamp} \nipfs_blocks_size {file_size_str} {current_timestamp} \nbartering_bootstrap_running {bartering_bootstrap_running} {current_timestamp} \nbartering_running {bartering_running} {current_timestamp}"
 
             # Send the response content as bytes
             self.wfile.write(response_text.encode('utf-8'))

@@ -54,7 +54,7 @@
       delegate_to: localhost
     
     - name: Start IPFS dameons
-      shell: nohup ipfs daemon --enable-gc &
+      shell: nohup ipfs daemon --enable-gc >/dev/null 2>&1 &
 
     - copy:
         src: kubo/requirements.txt
@@ -122,6 +122,30 @@
     - name: Start IPFS dameons
       shell: nohup ipfs daemon --enable-gc >/dev/null 2>&1 &
 
+    - copy:
+        src: kubo/requirements.txt
+        dest: requirements.txt
+    
+    - name: PIP INSTALLATION - APT GET UPDATE
+      shell: apt-get update
+
+    - name: install SUDO
+      shell: apt-get install sudo -y
+
+    - name: setup tools
+      shell: apt-get install python-setuptools -y
+
+    # - name: install pexpect
+    #   pip:
+    #     name: pexpect
+    #   become: yes
+    
+    - name: PIP INSTALLATION
+      shell: apt-get install python3-pip -y
+
+    - name: Install psutil
+      shell: pip install psutil
+    
     - name: Start prometheus node exporter
       shell: nohup python3 node_exporter.py {{ hostvars[inventory_hostname]['label'] }} >/dev/null 2>&1 &
 

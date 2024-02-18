@@ -33,12 +33,12 @@ with open("id_secret/bootstrap_ip.txt", "w") as f:
 
 ## PARSE CLUSTER SECRET ##
 
-with open("id_secret/cluster_secret.txt","r") as f:
-    line = f.readlines()
+# with open("id_secret/cluster_secret.txt","r") as f:
+#     line = f.readlines()
 
-cluster_password = line[0][20:-5]
+# cluster_password = line[0][20:-5]
 
-os.system("rm -f cluster_secret.txt")
+# os.system("rm -f cluster_secret.txt")
 
-with open("id_secret/cluster_secret.txt","w") as f:
-    f.write(cluster_password)
+# with open("id_secret/cluster_secret.txt","w") as f:
+#     f.write(cluster_password)

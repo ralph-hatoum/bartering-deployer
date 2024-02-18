@@ -34,7 +34,7 @@ def is_process_running(process_name):
 
 def list_pinned_cid():
     # List pin cid and retrieve them to show in grafana
-    os.system(f"IPFS_PATH={FOLDER} {ROOT}/ipfs pin ls > ./output.txt")
+    os.system(f"ipfs pin ls > ./output.txt")
     with open("output.txt",'r') as f:
         lines = f.readlines()
     output = " ".join(lines)
@@ -60,10 +60,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             ipfs_running = is_process_running("ipfs")
             ipfs_clus_running = is_process_running("ipfs-cluster-service")
-            # pinned = list_pinned_cid()
+            pinned = list_pinned_cid()
+            bartering_bootstrap_running = is_process_running("bootstrap")
+
+            bartering_running = is_process_running("bartering")
 
             # Set the response content
-            response_text = f"ipfs_up {ipfs_running} {current_timestamp} \nipfs_blocks_size {file_size_str} {current_timestamp} \nipfs_clus_up {ipfs_clus_running} {current_timestamp} " 
+            response_text = f"ipfs_up {ipfs_running} {current_timestamp} \nipfs_blocks_size {file_size_str} {current_timestamp} \nipfs_clus_up {ipfs_clus_running} {current_timestamp} \nbartering_bootstrap_running {bartering_bootstrap_running} {current_timestamp} \nipfs_pinned {pinned} {current_timestamp} \nbartering_running {bartering_running} {current_timestamp}\n" 
             # """\nipfs_pinned {pinned} {current_timestamp}"""
 
             # Send the response content as bytes

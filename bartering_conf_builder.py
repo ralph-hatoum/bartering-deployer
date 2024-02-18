@@ -39,7 +39,7 @@ def build_configs(config_list):
         check_if_different_and_change("FailureModel", node_type[2], conf)
         for key in node_type[3].keys():
             check_if_different_and_change(key, node_type[3][key], conf)
-        with open(f"playbooks/bartering-protocol/{node_type[0]}/conf.yaml", "w") as conf_file:
+        with open(f"playbooks/bartering-protocol/{node_type[0]}/config.yaml", "w") as conf_file:
             yaml.dump(conf, conf_file, default_flow_style=False)
 
 # build_configs(conf_list)
