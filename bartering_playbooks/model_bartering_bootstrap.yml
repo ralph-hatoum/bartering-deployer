@@ -12,4 +12,6 @@
     - name : Allow bootstrap binary to be executable
       shell: chmod u+x bartering-bootstrap/bootstrap
     - name: Start bootstrap
-      shell: nohup bartering-bootstrap/bootstrap {{ bootstrap_ip }} &
+      shell: nohup bartering-bootstrap/bootstrap {{ bootstrap_ip }} >/dev/null 2>&1 &
+    # - name: display command output
+    #   debug: var=bootstrapOutput.stdout_lines

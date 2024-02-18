@@ -9,14 +9,14 @@
     - name: Copy bartering binary
       copy:
         src: bartering-protocol/bartering
-        dest: /root
+        dest: bartering/{{ hostvars[inventory_hostname]['label'] }}
     - name: Copy bartering config file
       copy:
         src: bartering-protocol/{{ group_name }}/config.yaml
-        dest: bartering/{{ hostvars[inventory_hostname]['label'] }}
+        dest: "~"
     - name : Authorize execution of bartering binary
       shell: chmod u+x bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering
     - name: Make data dir
-      shell: mkdir -p bartering/{{ hostvars[inventory_hostname]['label'] }}/data
+      shell: mkdir -p data
     - name: Run bartering protocol
-      shell: nohup bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering {{ bootstrap_ip }} &
+      shell: nohup bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering {{ bootstrap_ip }} >/dev/null 2>&1 &
