@@ -9,6 +9,10 @@
       copy:
         src: bartering-protocol/bootstrap
         dest: bartering-bootstrap/
+    - name: copy ips.txt file
+      copy:
+        src: bartering-protocol/ips.txt
+        dest: "~"
     - name : Allow bootstrap binary to be executable
       shell: chmod u+x bartering-bootstrap/bootstrap
     - name: Start bootstrap

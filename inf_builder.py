@@ -6,6 +6,7 @@ import os
 import node_reservation
 from grid5000 import Grid5000
 import bartering_conf_builder
+import subprocess
 
 
 ## TODO GENERATE SWARM KEY !!!
@@ -105,6 +106,24 @@ print(f"\nBootstrap chosen : {bootstrap_node}\n")
 print("\nWriting Prometheus yaml file for data collection ...\n")
 prometheus_conf_writer(available_hosts, 9101, "./prometheus/prometheus.yml")
 print("\n\033[0;32mPrometheus file succesfully written ! \033[0m\n")
+
+# Write ips.txt file for bartering bootstrap
+
+print("\nWriting ips.txt file for bartering bootstrap ... \n")
+
+def get_ip_from_domain(bootstrap_domain):
+    out = subprocess.check_output(f"dig +short {bootstrap_domain}",shell=True)
+    return out.decode()[:-1]
+
+ips = [get_ip_from_domain(domain) for domain in available_hosts]
+
+print("IPS : ", ips)
+
+with open("./playbooks/bartering-protocol/ips.txt","w") as f:
+    for ip in ips:
+        f.write(ip+"\n")
+
+print("\n ips.txt file for bartering bootstrap written in playbooks/bartering-protocol \n")
 
 available_hosts.remove(bootstrap_node)
 
