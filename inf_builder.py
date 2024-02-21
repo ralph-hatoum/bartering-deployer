@@ -15,6 +15,10 @@ with open("network_config_clusters.json","r") as f:
 
 nodes_needed = int(config["IPFS_network"]["Nodes"])
 
+test_length = config["TestLength"]
+
+print(f"\nTest length : {test_length}")
+
 username = config["Credentials"]
 
 ## CHECK CONFIG'S VALIDITY ##
@@ -65,7 +69,7 @@ gk = Grid5000.from_yaml(conf_file)
 
 # job, result = node_reservation.submit_job(gk, "lyon", "", nodes_needed, "debian11-min","0:03:30")
 
-job = node_reservation.submit_job_and_only_job(gk, "lyon", "", nodes_needed, "debian11-min","0:30:30")
+job = node_reservation.submit_job_and_only_job(gk, "lyon", "", nodes_needed, "debian11-min",test_length)
 
 # TODO test if deployment OK (on result var), if not need to del job and abort test
 
