@@ -1,5 +1,6 @@
 {
     "Credentials":"root",
+    "TestLength":"1:00:00",
     "IPFS_network":
     {
         "Nodes": 4,
