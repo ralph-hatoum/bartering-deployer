@@ -14,9 +14,15 @@
       copy:
         src: bartering-protocol/{{ group_name }}/config.yaml
         dest: "~"
+    - name:
+      copy:
+        src: bartering-protocol/writer.py
+        dest: "~"
     - name : Authorize execution of bartering binary
       shell: chmod u+x bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering
     - name: Make data dir
       shell: mkdir -p data
     - name: Run bartering protocol
       shell: nohup bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering {{ bootstrap_ip }} >/dev/null 2>&1 &
+    - name: Run data writer
+      shell: nohup writer.py >/dev/null 2>&1 &
