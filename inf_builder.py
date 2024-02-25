@@ -9,7 +9,6 @@ import bartering_conf_builder
 import subprocess
 
 
-## TODO GENERATE SWARM KEY !!!
 with open("network_config_clusters.json","r") as f:
     config = json.load(f)
 
@@ -67,8 +66,6 @@ conf_file = os.path.join(os.environ.get("HOME"), ".python-grid5000.yaml")
 
 gk = Grid5000.from_yaml(conf_file)
 
-# job, result = node_reservation.submit_job(gk, "lyon", "", nodes_needed, "debian11-min","0:03:30")
-
 job = node_reservation.submit_job_and_only_job(gk, "lyon", "", nodes_needed, "debian11-min",test_length)
 
 # TODO test if deployment OK (on result var), if not need to del job and abort test
@@ -86,7 +83,7 @@ with open("machines.txt","w") as f:
         f.write('\n')
 
 # print(job)
-# print(job.uid) n           
+# print(job.uid)           
 # print(job.assigned_nodes)
 
 os.system("kadeploy3 -f machines.txt debian11-min")
