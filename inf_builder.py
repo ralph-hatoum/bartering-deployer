@@ -4,7 +4,7 @@ from prometheus.prometheus_conf_writer import prometheus_conf_writer
 import yaml
 import os
 import node_reservation
-from grid5000 import Grid5000
+# from grid5000 import Grid5000
 import bartering_conf_builder
 import subprocess
 
@@ -42,6 +42,12 @@ except Exception as e:
 
 if flag_bartering:
     bartering_configs = config["Bartering_network"]["peers"]
+    for key in bartering_configs.keys():
+        try:
+            # TODO check for all config validity
+            data_copies = bartering_configs[key]['conf']["DataCopies"]
+        except Exception as e:
+            print("\nMissing DataCopies field in bartering config")
     total_nodes_bartering = sum([bartering_configs[key]["Nodes"] for key in bartering_configs.keys()])
     if total_nodes_bartering > nodes_needed:
         print("\n\033[91mError : you have defined more bartering nodes than there are nodes in the network. Please fix the configuration.\033[0m\n")
