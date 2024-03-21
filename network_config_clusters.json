@@ -28,7 +28,8 @@
                 "StoragetestingTestingPeriod": 20,
                 "StoragetestingFailedTestTimeoutDecrease": 0.5,
                 "StoragetestingFailedTestWrongAnsDecrease": 0.7,
-                "StoragetestingPassedTestIncrease":0.2
+                "StoragetestingPassedTestIncrease":0.2,
+                "DataCopies":1
                 }
             }, 
             "2": 
@@ -46,7 +47,8 @@
                 "StoragetestingTestingPeriod": 2013,
                 "StoragetestingFailedTestTimeoutDecrease": 0.5131,
                 "StoragetestingFailedTestWrongAnsDecrease": 0.7,
-                "StoragetestingPassedTestIncrease":0.2
+                "StoragetestingPassedTestIncrease":0.2,
+                "DataCopies":1
                 }
             }
 
