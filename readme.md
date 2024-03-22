@@ -15,6 +15,7 @@ Once you have this, the recommended workflow is the following :
 Avoid editing files on the Grid5000 frontend ; it is impractical to do so in Vi or Nano, and using VSCode to edit files over SSH seems to overload the frontend and cause problems for **all** people connecting to the frontend (source: Grid5000 mailing list discussion).
 
 ## Deploy
+### Install ansible 
 In the inf_builder.py, you have to choose your test's durantion. Be careful that this needs to take into account the time to deploy. After that, all you need to do is edit the network_config_clusters.json file : 
 ```
 {
