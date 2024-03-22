@@ -4,7 +4,7 @@ from prometheus.prometheus_conf_writer import prometheus_conf_writer
 import yaml
 import os
 import node_reservation
-# from grid5000 import Grid5000
+from grid5000 import Grid5000
 import bartering_conf_builder
 import subprocess
 
