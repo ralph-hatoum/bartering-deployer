@@ -7,6 +7,7 @@ import node_reservation
 from grid5000 import Grid5000
 import bartering_conf_builder
 import subprocess
+from is_network_up import get_targets, hit_target
 
 
 ## TODO GENERATE SWARM KEY !!!
@@ -275,3 +276,9 @@ print("\nLaunching playbook ...")
 
 os.system("ansible-playbook playbooks/playbook.yml -i hosts/hosts.ini")
 
+print("\n Getting network status ... ")
+
+targets = get_targets()
+
+for target in targets:
+    hit_target(target)
