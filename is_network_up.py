@@ -9,13 +9,23 @@ def get_targets():
     return targets
 
 def hit_target(target):
-    url = f"http://{target}"
+    url = f"http://{target}/metrics"
     response = requests.get(url)
     if response.status_code == 200:
         data = response.text
         format_and_print(data, target)    
     else:
         print("Request unsuccessful, node exporter probably not running")
+        
+def hit_target_return_answer(target):
+    url = f"http://{target}/metrics"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.text
+        return data   
+    else:
+        print("Request unsuccessful, node exporter probably not running")
+        return None
 
 test_data = """ipfs_up 1 1711185189389
 ipfs_blocks_size 46011967 1711185189389
@@ -28,7 +38,7 @@ bartering_running 1 1711185189389"""
 def format_and_print(data, target):
     data = data.split('\n')
     states = []
-    for i in [0,3,-1]:
+    for i in [0,3,-2]:
         data_split = data[i].split(' ')
         if data_split[1]=='1':
             states.append("\033[92mup\033[0m")
