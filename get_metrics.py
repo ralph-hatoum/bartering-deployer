@@ -6,7 +6,9 @@ import sys
 import signal
 
 
-TARGETS = get_targets()
+# TARGETS = get_targets()
+
+TARGETS=["A","B","C"]
 
 current_time = datetime.datetime.now()
 
@@ -27,13 +29,22 @@ bartering_running 1 1711185189389"""
 def initiate_file():
     with open(OUTPUT_FILE, "w+") as file:
         file.write("{}")
+    with open(OUTPUT_FILE, "r") as file:
+        data = json.load(file)
+    for target in TARGETS:
+        data[target]={}
+    with open(OUTPUT_FILE, "w") as file:
+        json.dump(data, file)
 
 def format_metric(value, timestamp):
     return {"Value": value, "Timestamp": timestamp}
 
-def write_in_json_file(file_name, metric_name, to_append):
+def write_in_json_file(file_name, metric_name, to_append, target):
     with open(file_name, "r") as json_file:
         data = json.load(json_file)
+    print(data)
+    data = data[target]
+    print(list(data.keys()))
     if metric_name in data.keys():
         data[metric_name].append(to_append)
     else:
@@ -41,7 +52,7 @@ def write_in_json_file(file_name, metric_name, to_append):
     with open(file_name, "w") as json_file:
         json.dump(data, json_file)
     
-def write_in_output(response):
+def write_in_output(response, target):
     response = response.split('\n')
     for metric in response:
         metric = metric.split(' ')
@@ -50,7 +61,7 @@ def write_in_output(response):
             metric_value = metric[1]
             timestamp = metric[2]
             to_append = format_metric(metric_value, timestamp)
-            write_in_json_file(OUTPUT_FILE, metric_name, to_append)
+            write_in_json_file(OUTPUT_FILE, metric_name, to_append, target)
         except:
             print("Invalid metric")
 
@@ -64,7 +75,7 @@ if __name__=="__main__":
     stopped = False
     signal.signal(signal.SIGINT, signal_handler)
     while not stopped:
-        for target in targets:
-            response = hit_target_return_answer(target)
-            write_in_output(test_data)
+        for target in TARGETS:
+            # response = hit_target_return_answer(target)
+            write_in_output(test_data, target)
         time.sleep(2)
