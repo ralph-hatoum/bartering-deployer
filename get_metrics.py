@@ -42,13 +42,12 @@ def format_metric(value, timestamp):
 def write_in_json_file(file_name, metric_name, to_append, target):
     with open(file_name, "r") as json_file:
         data = json.load(json_file)
-    print(data)
-    data = data[target]
-    print(list(data.keys()))
-    if metric_name in data.keys():
-        data[metric_name].append(to_append)
+    print("Data : ",data)
+    print("Target", target)
+    if metric_name in data[target].keys():
+        data[target][metric_name].append(to_append)
     else:
-        data[metric_name] = [to_append]
+        data[target][metric_name] = [to_append]
     with open(file_name, "w") as json_file:
         json.dump(data, json_file)
     
