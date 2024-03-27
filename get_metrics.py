@@ -75,6 +75,6 @@ if __name__=="__main__":
     signal.signal(signal.SIGINT, signal_handler)
     while not stopped:
         for target in TARGETS:
-            # response = hit_target_return_answer(target)
-            write_in_output(test_data, target)
+            response = hit_target_return_answer(target)
+            write_in_output(response, target)
         time.sleep(2)
