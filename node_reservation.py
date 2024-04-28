@@ -17,10 +17,16 @@ command = ""
 def submit_job_and_only_job(gk, site, timeout, number_of_nodes, env, res_duration):
     site = gk.sites[site]
 
+     # Modify the properties to include the specific clusters in Lyon
+    clusters = ["gemini", "neowise", "nova", "orion", "pyxis", "sagittaire", "sirius", "taurus"]
+    cluster_conditions = " OR ".join([f"cluster='{cluster}'" for cluster in clusters])
+    properties = f"({cluster_conditions})"
+
     job = site.jobs.create({"name": "bartering-deployment",
                         "command": "sleep 3600",
                         "types": ["deploy"],
-                        "resources": f"nodes={number_of_nodes},walltime={res_duration}"})
+                        "resources": f"nodes={number_of_nodes},walltime={res_duration}",
+                        "properties": properties    })
     
     while job.state != "running":
         job.refresh()
@@ -33,11 +39,17 @@ def submit_job_and_only_job(gk, site, timeout, number_of_nodes, env, res_duratio
 
 def submit_job(gk, site, timeout, number_of_nodes, env, res_duration):
     site = gk.sites[site]
+    
+    # Modify the properties to include the specific clusters in Lyon
+    clusters = ["gemini", "neowise", "nova", "orion", "pyxis", "sagittaire", "sirius", "taurus"]
+    cluster_conditions = " OR ".join([f"cluster='{cluster}'" for cluster in clusters])
+    properties = f"({cluster_conditions})"
 
     job = site.jobs.create({"name": "bartering-deployment",
                         "command": "sleep 3600",
                         "types": ["deploy"],
-                        "resources": f"nodes={number_of_nodes},walltime={res_duration}"})
+                        "resources": f"nodes={number_of_nodes},walltime={res_duration}",
+                        "properties": properties})
     
     while job.state != "running":
         job.refresh()

@@ -154,11 +154,4 @@
     - name : install lsof
       shell: apt install -y lsof
 
-- hosts: Bootstrap-node
-  tasks:
-    - name: Get bartering boostrap IP
-      shell: python3 bartering_bootstrap_ip.py {{ groups['BarteringBootstrap'][0] }}
-      delegate_to: localhost
-      register: boostrapIP
-    - name: Display output
-      debug: var=boostrapIP.stdout_lines
+

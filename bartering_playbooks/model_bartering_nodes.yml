@@ -1,7 +1,7 @@
 - hosts: #BARTERING nodes
   gather_facts: no
   vars: 
-    bootstrap_ip: "{{lookup('file','bartering-protocol/bootstrap_ip.txt')}}"
+    
     group_name: 
   tasks:
     - name: Make bartering folder
@@ -12,7 +12,7 @@
         dest: bartering/{{ hostvars[inventory_hostname]['label'] }}
     - name: Copy bartering config file
       copy:
-        src: bartering-protocol/{{ group_name }}/config.yaml
+        src: bartering-protocol/config.yaml
         dest: "~"
     - name:
       copy:
@@ -23,6 +23,6 @@
     - name: Make data dir
       shell: mkdir -p data
     - name: Run bartering protocol
-      shell: nohup bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering {{ bootstrap_ip }} >/dev/null 2>&1 &
+      shell: nohup ./bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering {{ hostvars[ groups['BarteringBootstrap'][0]]['ip_address'] }} >/dev/null 2>&1 &
     - name: Run data writer
-      shell: nohup writer.py >/dev/null 2>&1 &
+      shell: python3 writer.py {{ hostvars[inventory_hostname]['label'] }}
