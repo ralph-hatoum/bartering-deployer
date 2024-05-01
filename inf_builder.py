@@ -8,6 +8,7 @@ from grid5000 import Grid5000
 import bartering_conf_builder
 import subprocess
 from is_network_up import get_targets, hit_target
+from machine_test_starter import ping_machines_to_start
 
 
 ## TODO GENERATE SWARM KEY !!!
@@ -282,3 +283,9 @@ targets = get_targets()
 
 for target in targets:
     hit_target(target)
+
+# TODO : diagnose network status (not a priority)
+
+# Here, we consider network is up, and test is ready to start
+
+ping_machines_to_start(ips)

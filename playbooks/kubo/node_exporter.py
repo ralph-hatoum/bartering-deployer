@@ -13,7 +13,7 @@ node_name = args[1]
 
 ROOT = f"IPFS_nodes/{node_name}/kubo"
 # FOLDER = f"IPFS_nodes/{node_name}/kubo/.ipfs"
-FOLDER = "."
+FOLDER = "./data"
 
 def getFolderSize(folder):
     total_size = os.path.getsize(folder)

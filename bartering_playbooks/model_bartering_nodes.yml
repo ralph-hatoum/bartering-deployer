@@ -24,5 +24,7 @@
       shell: mkdir -p data
     - name: Run bartering protocol
       shell: nohup bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering {{ bootstrap_ip }} >/dev/null 2>&1 &
+    - name: Install
+      shell: pip install numpy
     - name: Run data writer
-      shell: nohup writer.py >/dev/null 2>&1 &
+      shell: nohup python3 writer.py >/dev/null 2>&1 &
