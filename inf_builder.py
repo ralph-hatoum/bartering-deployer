@@ -9,6 +9,7 @@ import bartering_conf_builder
 import subprocess
 from is_network_up import get_targets, hit_target
 from machine_test_starter import ping_machines_to_start
+import time
 
 
 ## TODO GENERATE SWARM KEY !!!
@@ -284,8 +285,14 @@ targets = get_targets()
 for target in targets:
     hit_target(target)
 
-# TODO : diagnose network status (not a priority)
-
-# Here, we consider network is up, and test is ready to start
+time.sleep(10)
 
 ping_machines_to_start(ips)
+
+# Here, we consider network is up, and test is ready to start
+# Next lines allow us to continuously diagnose network status during test
+targets = get_targets()
+while True:
+    for target in targets:
+        hit_target(target)
+    time.sleep(10)
