@@ -9,6 +9,9 @@ from grid5000 import Grid5000
 import bartering_conf_builder
 import subprocess
 import socket
+from is_network_up import get_targets, hit_target
+from machine_test_starter import ping_machines_to_start
+import time
 
 
 ## TODO GENERATE SWARM KEY !!!
@@ -290,8 +293,16 @@ os.system("ansible-playbook playbooks/playbook.yml -i hosts/hosts.ini")
 
 print("\n Getting network status ... ")
 
+
+
+time.sleep(10)
+
+ping_machines_to_start(ips)
+
+# Here, we consider network is up, and test is ready to start
+# Next lines allow us to continuously diagnose network status during test
 targets = get_targets()
-
-for target in targets:
-    hit_target(target)
-
+while True:
+    for target in targets:
+        hit_target(target)
+    time.sleep(10)
