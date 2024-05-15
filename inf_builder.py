@@ -1,5 +1,6 @@
 import json
 # from python_scripts.pinger import ping_all_machines
+from is_network_up import get_targets, hit_target
 from prometheus.prometheus_conf_writer import prometheus_conf_writer
 import yaml
 import os
@@ -7,6 +8,7 @@ import node_reservation
 from grid5000 import Grid5000
 import bartering_conf_builder
 import subprocess
+import socket
 from is_network_up import get_targets, hit_target
 from machine_test_starter import ping_machines_to_start
 import time
@@ -144,12 +146,14 @@ available_hosts.remove(bootstrap_node)
 print("Building hosts.ini file ...")
 
 with open("hosts/hosts.ini","w") as f:
-    f.write(f"[Bootstrap-node]\n{username}@{bootstrap_node} label=bootstrap label_ip={bootstrap_node}\n")
+    ip_address = socket.gethostbyname(bootstrap_node)
+    f.write(f"[Bootstrap-node]\n{username}@{bootstrap_node} label=bootstrap label_ip={bootstrap_node} ip_address={ip_address}\n")
     f.write('\n')
     f.write(f"[IPFS-nodes]\n")
     n = 0
     for host in available_hosts:
-        f.write(f"{username}@{host} label=node{n} label_ip={host}\n")
+        ip_address = socket.gethostbyname(host)
+        f.write(f"{username}@{host} label=node{n} label_ip={host} ip_address={ip_address}\n")
         n +=1 
     f.write('\n')
 
@@ -167,8 +171,15 @@ if flag_bartering:
 
     with open("hosts/hosts.ini","a") as f:
         counter = 0
-        f.write(f"[BarteringBootstrap]\n{username}@{available_hosts[0]} label=bartering-bootstrap label_ip={available_hosts[0]}\n")
-
+            
+        # Get the IP address for the first host
+        ip_address = socket.gethostbyname(available_hosts[0])
+        
+        
+        # Write the host entry with IP address
+        f.write(f"[BarteringBootstrap]\n")
+        f.write(f"{username}@{available_hosts[0]} label=bartering-bootstrap label_ip={available_hosts[0]} ip_address={ip_address}\n")
+    
         # Open model bootstrap playbook
         bootstrap_file = open("bartering_playbooks/model_bartering_bootstrap.yml", "r") 
         base_bootstrap = yaml.safe_load(bootstrap_file)
@@ -181,6 +192,7 @@ if flag_bartering:
         existing_playbook.append(base_bootstrap[0])
 
 
+       
         for key in bartering_configs.keys():
             f.write(f"[BarteringNodes{key}]\n")
             number_of_nodes = bartering_configs[key]["Nodes"]
@@ -196,7 +208,8 @@ if flag_bartering:
             existing_playbook.append(base_node[0])
 
             while n < number_of_nodes:
-                f.write(f"{username}@{available_hosts[counter]} label=bartering-node{counter} label_ip={available_hosts[counter]}\n")
+                ip_address = socket.gethostbyname(available_hosts[counter])
+                f.write(f"{username}@{available_hosts[counter]} label=bartering-node{counter} label_ip={available_hosts[counter]} ip_address={ip_address}\n")
                 n+=1
                 counter +=1
     with open("playbooks/playbook.yml","w") as f:
@@ -280,10 +293,7 @@ os.system("ansible-playbook playbooks/playbook.yml -i hosts/hosts.ini")
 
 print("\n Getting network status ... ")
 
-targets = get_targets()
 
-for target in targets:
-    hit_target(target)
 
 time.sleep(10)
 

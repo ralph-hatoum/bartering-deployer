@@ -1,0 +1,14 @@
+BarteringFactorAcceptableRatio: 0.312312
+BarteringInitialScore: 10.0
+BarteringRatioIncreaseRate: 0.12132
+DataCopies: 1
+FailureModel: weibull
+NodeProfile: peer
+Port: 8081
+StoragerequestsScoreDecreaseRefusedStoReq: 0.8
+StoragetestingFailedTestTimeoutDecrease: 0.5131
+StoragetestingFailedTestWrongAnsDecrease: 0.7
+StoragetestingPassedTestIncrease: 0.2
+StoragetestingTestingPeriod: 2013
+StoragetestingTimerTimeoutSec: 5
+TotalStorage: 1500

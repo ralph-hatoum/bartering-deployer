@@ -3,7 +3,7 @@
     "TestLength":"1:00:00",
     "IPFS_network":
     {
-        "Nodes": 4,
+        "Nodes": 2,
         "GCPeriod": "15m",
         "MaxStorage": "15kb"
         
@@ -15,7 +15,7 @@
         {
             "1": 
             {
-                "Nodes": 2,
+                "Nodes": 1,
                 "conf": 
                 {
                 "TotalStorage": 150000,
@@ -34,7 +34,7 @@
             }, 
             "2": 
             {
-                "Nodes": 2,
+                "Nodes": 1,
                 "conf": 
                 {
                 "TotalStorage": 1500,

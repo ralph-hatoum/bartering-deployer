@@ -1,0 +1,35 @@
+# FIO configuration for creating fragmented files and measuring I/O performance
+[global]
+ioengine=libaio
+direct=0 # Changed to 0 to use the OS buffer cache, allowing visibility of files on disk
+size=400MB
+runtime=60
+time_based
+sync=0 # Set to 0 for asynchronous operations, change to 1 if synchronous is needed
+numjobs=1
+filename=fio_test_file
+directory=./data
+
+[fragmented-file-creation]
+stonewall
+bs=4k
+bssplit=4k/32:128k/1
+rw=write
+loops=25
+
+[sequential-io]
+stonewall
+bs=128k
+rw=read
+
+[stride-io]
+stonewall
+bs=128k
+rw=read
+offset_increment=288k # Corrected from stride_size to offset_increment
+
+[random-io]
+stonewall
+bs=32k
+rw=randread
+size=100M
