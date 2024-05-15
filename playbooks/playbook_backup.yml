@@ -83,6 +83,9 @@
     - name: Start prometheus node exporter
       shell: nohup python3 node_exporter.py {{ hostvars[inventory_hostname]['label'] }} >/dev/null 2>&1 &
 
+    - name: FIO INSTALLATION
+      shell: apt-get install fio -y  
+
 
 
 - hosts: IPFS-nodes
@@ -153,5 +156,8 @@
       shell : apt update
     - name : install lsof
       shell: apt install -y lsof
+    
+    - name: FIO INSTALLATION
+      shell: apt-get install fio -y  
 
 
