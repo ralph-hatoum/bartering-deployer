@@ -1,0 +1,19 @@
+- hosts: all
+  tasks:
+    - name: Run Non buffered IO tests with varying thread counts
+      shell: >
+        nohup fio --name=non-buffered-io-test --numjobs={{ item }} fio_test.fio 
+        --output=fio_results_{{ item }}_threads.txt
+        > fio_stdout_{{ item }}_threads.log 
+        2> fio_stderr_{{ item }}_threads.log &
+      with_items:
+        - 1
+        - 2
+        - 4
+        - 8
+        - 16
+        - 32
+        - 64
+      async: 1200
+      poll: 0
+      register: fio_shell_output

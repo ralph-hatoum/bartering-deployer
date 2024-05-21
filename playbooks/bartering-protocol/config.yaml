@@ -10,7 +10,7 @@ BarteringRatioIncreaseRate: 0.1
 StoragerequestsScoreDecreaseRefusedStoReq: 0.8
 
 
-StoragetestingTimerTimeoutSec: 5
+StoragetestingTimerTimeoutSec: 15
 StoragetestingTestingPeriod: 20
 StoragetestingFailedTestTimeoutDecrease: 0.5
 StoragetestingFailedTestWrongAnsDecrease: 0.7

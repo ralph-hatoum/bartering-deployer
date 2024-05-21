@@ -81,6 +81,7 @@ gk = Grid5000.from_yaml(conf_file)
 # job, result = node_reservation.submit_job(gk, "lyon", "", nodes_needed, "debian11-min","0:03:30")
 
 job = node_reservation.submit_job_and_only_job(gk, "lyon", "", nodes_needed, "debian11-min",test_length)
+#job = node_reservation.submit_job_and_only_job_res(gk, "lyon", nodes_needed, "debian11-min",test_length,"15:00")
 
 # TODO test if deployment OK (on result var), if not need to del job and abort test
 
@@ -290,6 +291,8 @@ print("\nLaunching playbook ...")
 
 
 os.system("ansible-playbook playbooks/playbook.yml -i hosts/hosts.ini")
+
+#os.system("ansible-playbook playbooks/FIO_threads.yml -i hosts/hosts.ini")
 
 print("\n Getting network status ... ")
 
