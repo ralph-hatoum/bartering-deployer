@@ -12,8 +12,8 @@ def hit_target(target):
     url = f"http://{target}/metrics"
     response = requests.get(url)
     if response.status_code == 200:
-        data = response.text
-        format_and_print(data, target)    
+        json_data = response.json()
+        format_and_print(json_data, target)    
     else:
         print("Request unsuccessful, node exporter probably not running")
         
@@ -36,11 +36,9 @@ ipfs_pinned QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn recursive
 bartering_running 1 1711185189389"""
 
 def format_and_print(data, target):
-    data = data.split('\n')
     states = []
-    for i in [0,3,-2]:
-        data_split = data[i].split(' ')
-        if data_split[1]=='1':
+    for metric in ["ipfs_up","bartering_bootstrap_running","bartering_running"]:
+        if data[metric]==1:
             states.append("\033[92mup\033[0m")
         else:
             states.append("\033[91mdown\033[0m")

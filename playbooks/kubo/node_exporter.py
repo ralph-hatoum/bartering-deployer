@@ -3,6 +3,7 @@ import os
 import time
 import psutil
 import sys
+import json
 
 # Define the port number to listen on
 PORT = 9101
@@ -40,6 +41,8 @@ def list_pinned_cid():
     output = " ".join(lines)
     return output
     
+def build_json_response(ipfs_running, ipfs_clus_running, pinned, bartering_bootstrap_running, bartering_running, timestamp,file_size_str):
+    return {"timestamp": timestamp, "ipfs_up": ipfs_running, "ipfs_blocks_size": file_size_str,"ipfs_clus_up":ipfs_clus_running, "bartering_bootstrap_running":bartering_bootstrap_running, "ipfs_pinned": pinned, "bartering_running":bartering_running}
 
 # Create a custom request handler by subclassing BaseHTTPRequestHandler
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -66,11 +69,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             bartering_running = is_process_running("bartering")
 
             # Set the response content
-            response_text = f"ipfs_up {ipfs_running} {current_timestamp} \nipfs_blocks_size {file_size_str} {current_timestamp} \nipfs_clus_up {ipfs_clus_running} {current_timestamp} \nbartering_bootstrap_running {bartering_bootstrap_running} {current_timestamp} \nipfs_pinned {pinned} {current_timestamp} \nbartering_running {bartering_running} {current_timestamp}\n" 
+            # response_text = f"ipfs_up {ipfs_running} {current_timestamp} \nipfs_blocks_size {file_size_str} {current_timestamp} \nipfs_clus_up {ipfs_clus_running} {current_timestamp} \nbartering_bootstrap_running {bartering_bootstrap_running} {current_timestamp} \nipfs_pinned {pinned} {current_timestamp} \nbartering_running {bartering_running} {current_timestamp}\n" 
+            reponse_json = {"timestamp": current_timestamp, "ipfs_up": ipfs_running, "ipfs_blocks_size": file_size_str,"ipfs_clus_up":ipfs_clus_running, "bartering_bootstrap_running":bartering_bootstrap_running, "ipfs_pinned": pinned, "bartering_running":bartering_running}
             # """\nipfs_pinned {pinned} {current_timestamp}"""
-
+            encoded = json.dumps(reponse_json).encode('utf-8')
             # Send the response content as bytes
-            self.wfile.write(response_text.encode('utf-8'))
+            self.wfile.write(encoded)
 
         return
 
