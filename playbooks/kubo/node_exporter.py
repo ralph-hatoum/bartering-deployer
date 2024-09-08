@@ -10,11 +10,12 @@ PORT = 9101
 
 args = sys.argv
 
-node_name = args[1]
+# node_name = args[1]
 
-ROOT = f"IPFS_nodes/{node_name}/kubo"
+# ROOT = f"IPFS_nodes/{node_name}/kubo"
 # FOLDER = f"IPFS_nodes/{node_name}/kubo/.ipfs"
-FOLDER = "./data"
+# FOLDER = "./data"
+FOLDER = "/root/.ipfs/blocks"
 
 def getFolderSize(folder):
     total_size = os.path.getsize(folder)
@@ -35,7 +36,7 @@ def is_process_running(process_name):
 
 def list_pinned_cid():
     # List pin cid and retrieve them to show in grafana
-    os.system(f"ipfs pin ls > ./output.txt")
+    os.system(f"ipfs pin ls --type=recursive > ./output.txt")
     with open("output.txt",'r') as f:
         lines = f.readlines()
     output = " ".join(lines)
@@ -70,7 +71,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             # Set the response content
             # response_text = f"ipfs_up {ipfs_running} {current_timestamp} \nipfs_blocks_size {file_size_str} {current_timestamp} \nipfs_clus_up {ipfs_clus_running} {current_timestamp} \nbartering_bootstrap_running {bartering_bootstrap_running} {current_timestamp} \nipfs_pinned {pinned} {current_timestamp} \nbartering_running {bartering_running} {current_timestamp}\n" 
-            reponse_json = {"timestamp": current_timestamp, "ipfs_up": ipfs_running, "ipfs_blocks_size": file_size_str,"ipfs_clus_up":ipfs_clus_running, "bartering_bootstrap_running":bartering_bootstrap_running, "ipfs_pinned": pinned, "bartering_running":bartering_running}
+            reponse_json = {"timestamp": current_timestamp, 
+                            "ipfs_up": ipfs_running, 
+                            "ipfs_blocks_size": file_size_str,
+                            "ipfs_clus_up":ipfs_clus_running, 
+                            "bartering_bootstrap_running":bartering_bootstrap_running, 
+                            "ipfs_pinned": pinned, 
+                            "bartering_running":bartering_running}
             # """\nipfs_pinned {pinned} {current_timestamp}"""
             encoded = json.dumps(reponse_json).encode('utf-8')
             # Send the response content as bytes

@@ -1,0 +1,12 @@
+- hosts: Bootstrap-node
+  gather_facts: no
+  tasks: 
+    - name: Start IPFS dameon
+      shell: nohup ipfs daemon --enable-gc >/dev/null 2>&1 &
+- hosts: IPFS-nodes
+  vars: 
+    bootstrap_id: "{{lookup('file','id_secret/bootstrap_id.txt')}}"
+  gather_facts: no
+  tasks:
+    - name: Start IPFS dameon
+      shell: nohup ipfs daemon --enable-gc >/dev/null 2>&1 &

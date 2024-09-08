@@ -1,0 +1,8 @@
+- hosts: BarteringBootstrap
+  gather_facts: no
+  vars: 
+    bootstrap_ip: "{{lookup('file','bartering-protocol/bootstrap_ip.txt')}}"
+  tasks:
+    - name: Start bootstrap
+      ignore_errors: true
+      shell: nohup bartering-bootstrap/bootstrap {{ bootstrap_ip }} >/dev/null 2>&1 &

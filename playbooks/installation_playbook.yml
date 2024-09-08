@@ -1,0 +1,172 @@
+- gather_facts: false
+  hosts: Bootstrap-node
+  tasks:
+  - name: Download IPFS
+    shell: wget https://dist.ipfs.tech/kubo/v0.26.0/kubo_v0.26.0_linux-amd64.tar.gz
+  - name: unzip IPFS
+    shell: tar -xvzf kubo_v0.26.0_linux-amd64.tar.gz
+  - name: run installation
+    shell: bash kubo/install.sh
+  - copy:
+      dest: node_exporter.py
+      src: kubo/node_exporter.py
+  - ignore_errors: true
+    name: Initialize IPFS node
+    shell: ipfs init
+  - copy:
+      dest: ~/.ipfs/swarm.key
+      src: id_secret/swarm.key
+  - name: Retrieving Bootstrap's ID
+    register: BootstrapID
+    shell: ipfs config show | grep "PeerID"
+  - name: Delete all bootstraps
+    shell: ipfs bootstrap rm --all
+  - debug: var=BootstrapID.stdout_lines
+    name: Display outputs
+  - copy:
+      content: '{{ BootstrapID.stdout_lines }}'
+      dest: id_secret/bootstrap_id.txt
+    delegate_to: localhost
+    name: Write output to local file
+  - delegate_to: localhost
+    name: Format bootstrap ipfs ID
+    shell: python3 bootstrap_parser.py {{hostvars[inventory_hostname]['label_ip']}}
+  - copy:
+      dest: requirements.txt
+      src: kubo/requirements.txt
+  - name: PIP INSTALLATION - APT GET UPDATE
+    shell: apt-get update
+  - name: install SUDO
+    shell: apt-get install sudo -y
+  - name: setup tools
+    shell: apt-get install python-setuptools -y
+  - name: PIP INSTALLATION
+    shell: apt-get install python3-pip -y
+  - name: Install psutil
+    shell: pip install psutil
+- gather_facts: false
+  hosts: IPFS-nodes
+  tasks:
+  - name: Download IPFS
+    shell: wget https://dist.ipfs.tech/kubo/v0.26.0/kubo_v0.26.0_linux-amd64.tar.gz
+  - name: unzip IPFS
+    shell: tar -xvzf kubo_v0.26.0_linux-amd64.tar.gz
+  - name: run installation
+    shell: bash kubo/install.sh
+  - copy:
+      dest: node_exporter.py
+      src: kubo/node_exporter.py
+  - ignore_errors: true
+    name: Initialize IPFS node
+    shell: ipfs init
+  - copy:
+      dest: ~/.ipfs/swarm.key
+      src: id_secret/swarm.key
+  - name: Delete all bootstraps
+    shell: ipfs bootstrap rm --all
+  - name: Add bootstrap node
+    shell: ipfs bootstrap add {{ bootstrap_id }}
+  - copy:
+      dest: requirements.txt
+      src: kubo/requirements.txt
+  - name: PIP INSTALLATION - APT GET UPDATE
+    shell: apt-get update
+  - name: install SUDO
+    shell: apt-get install sudo -y
+  - name: setup tools
+    shell: apt-get install python-setuptools -y
+  - name: PIP INSTALLATION
+    shell: apt-get install python3-pip -y
+  - name: Install psutil
+    shell: pip install psutil
+  - name: Start prometheus node exporter
+    shell: nohup python3 node_exporter.py {{ hostvars[inventory_hostname]['label'] }} >/dev/null 2>&1 &
+  - name: apt update
+    shell: apt update
+  - name: install lsof
+    shell: apt install -y lsof
+  vars:
+    bootstrap_id: '{{lookup(''file'',''id_secret/bootstrap_id.txt'')}}'
+- hosts: Bootstrap-node
+  tasks:
+  - delegate_to: localhost
+    name: Get bartering boostrap IP
+    register: boostrapIP
+    shell: python3 bartering_bootstrap_ip.py {{ groups['BarteringBootstrap'][0] }}
+  - debug: var=boostrapIP.stdout_lines
+    name: Display output
+- gather_facts: false
+  hosts: BarteringBootstrap
+  tasks:
+  - name: Make bartering bootstrap folder
+    shell: mkdir -p bartering-bootstrap/
+  - copy:
+      dest: bartering-bootstrap/
+      src: bartering-protocol/bootstrap
+    name: Copy bartering bootstrap binary
+  - copy:
+      dest: '~'
+      src: bartering-protocol/ips.txt
+    name: copy ips.txt file
+  - name: Allow bootstrap binary to be executable
+    shell: chmod u+x bartering-bootstrap/bootstrap
+  - name: Start bootstrap
+    shell: nohup bartering-bootstrap/bootstrap {{ bootstrap_ip }} >/dev/null 2>&1 &
+  vars:
+    bootstrap_ip: '{{lookup(''file'',''bartering-protocol/bootstrap_ip.txt'')}}'
+- gather_facts: false
+  hosts: BarteringNodes1
+  tasks:
+  - name: Make bartering folder
+    shell: mkdir -p bartering/{{ hostvars[inventory_hostname]['label'] }}
+  - copy:
+      dest: bartering/{{ hostvars[inventory_hostname]['label'] }}
+      src: bartering-protocol/bartering
+    name: Copy bartering binary
+  - copy:
+      dest: '~'
+      src: bartering-protocol/{{ group_name }}/config.yaml
+    name: Copy bartering config file
+  - copy:
+      dest: '~'
+      src: bartering-protocol/writer.py
+    name: null
+  - name: Authorize execution of bartering binary
+    shell: chmod u+x bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering
+  - name: Make data dir
+    shell: mkdir -p data
+  - name: Install numpy
+    shell: pip install numpy
+  - name: Run data writer
+    shell: nohup python3 writer.py >/dev/null 2>&1 &
+  vars:
+    bootstrap_ip: '{{lookup(''file'',''bartering-protocol/bootstrap_ip.txt'')}}'
+    group_name: BarteringNodes1
+- gather_facts: false
+  hosts: BarteringNodes2
+  tasks:
+  - name: Make bartering folder
+    shell: mkdir -p bartering/{{ hostvars[inventory_hostname]['label'] }}
+  - copy:
+      dest: bartering/{{ hostvars[inventory_hostname]['label'] }}
+      src: bartering-protocol/bartering
+    name: Copy bartering binary
+  - copy:
+      dest: '~'
+      src: bartering-protocol/{{ group_name }}/config.yaml
+    name: Copy bartering config file
+  - copy:
+      dest: '~'
+      src: bartering-protocol/writer.py
+    name: null
+  - name: Authorize execution of bartering binary
+    shell: chmod u+x bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering
+  - name: Make data dir
+    shell: mkdir -p data
+  - name: Install numpy
+    shell: pip install numpy
+  - name: Run data writer
+    shell: nohup python3 writer.py >/dev/null 2>&1 &
+  vars:
+    bootstrap_ip: '{{lookup(''file'',''bartering-protocol/bootstrap_ip.txt'')}}'
+    group_name: BarteringNodes2

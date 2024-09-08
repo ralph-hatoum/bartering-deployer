@@ -1,0 +1,13 @@
+- hosts: # bartering nodes
+  gather_facts: no
+  vars: 
+    bootstrap_ip: "{{lookup('file','bartering-protocol/bootstrap_ip.txt')}}"
+    group_name: 
+  tasks:
+    - name: Kill bartering protocol
+      ignore_errors: true
+      shell: kill $(ps aux | grep 'bartering' | awk '{print $2}')
+
+    - name: Start prometheus node exporter
+      ignore_errors: true
+      shell: nohup python3 node_exporter.py {{ hostvars[inventory_hostname]['label'] }} >/dev/null 2>&1 &

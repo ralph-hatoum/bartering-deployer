@@ -1,0 +1,69 @@
+- hosts: Bootstrap-node
+  gather_facts: no
+  tasks:
+    - name: Kill IPFS daemon
+      ignore_errors: true
+      shell: kill $(ps aux | grep 'ipfs' | awk '{print $2}')
+    - name: Erase IPFS files
+      shell: rm -r -f ~/.ipfs
+    - name: Re-init IPFS 
+      shell: ipfs init
+    - copy: 
+        src : id_secret/swarm.key
+        dest: ~/.ipfs/swarm.key
+
+    - name: Retrieving Bootstrap's ID
+      shell: ipfs config show | grep "PeerID"
+      register: BootstrapID
+
+    - name: Delete all bootstraps
+      shell: ipfs bootstrap rm --all
+
+    - name: Display outputs
+      debug: var=BootstrapID.stdout_lines
+    
+    - name: Write output to local file
+      copy:
+        content: "{{ BootstrapID.stdout_lines }}"
+        dest: id_secret/bootstrap_id.txt
+      delegate_to: localhost
+    
+    - name: Format bootstrap ipfs ID
+      shell: python3 bootstrap_parser.py {{hostvars[inventory_hostname]['label_ip']}}
+      delegate_to: localhost
+
+    - name: Start prometheus node exporter
+      ignore_errors: true
+      shell: nohup python3 node_exporter.py {{ hostvars[inventory_hostname]['label'] }} >/dev/null 2>&1 &
+
+- hosts: IPFS-nodes
+  vars: 
+    bootstrap_id: "{{lookup('file','id_secret/bootstrap_id.txt')}}"
+  gather_facts: no
+  tasks:
+    - name: Kill IPFS daemon
+      ignore_errors: true
+      shell: kill $(ps aux | grep 'ipfs' | awk '{print $2}')
+    - name: Erase IPFS files
+      shell: rm -r -f ~/.ipfs
+
+    - name: Initialize IPFS node
+      shell: ipfs init
+      ignore_errors: true 
+
+    - copy: 
+        src : id_secret/swarm.key
+        dest: ~/.ipfs/swarm.key
+
+    - name: Delete all bootstraps
+      shell: ipfs bootstrap rm --all
+
+    - name: Add bootstrap node
+      shell: ipfs bootstrap add {{ bootstrap_id }}
+    
+    - name: Start prometheus node exporter
+      ignore_errors: true
+      shell: nohup python3 node_exporter.py {{ hostvars[inventory_hostname]['label'] }} >/dev/null 2>&1 &
+
+
+    

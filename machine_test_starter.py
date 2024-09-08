@@ -8,11 +8,14 @@ def build_machines_list_with_port(machines):
         output.append((machine, 7000))
     return output
 
-def ping_machines_to_start(machines):
+def ping_machines_to_start(machines, file_size=None):
     peers = build_machines_list_with_port(machines)
     # Send start message to each peer
     for ip, port in peers:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.connect((ip, port))
-            sock.sendall("start".encode('utf-8'))
+            msg = "start"
+            if file_size != None:
+                msg = f"start${file_size}"
+            sock.sendall(msg.encode('utf-8'))
             print(f"Sent start message to {ip}:{port}")

@@ -1,0 +1,23 @@
+- gather_facts: false
+  hosts: Bootstrap-node
+  tasks:
+  - copy:
+      dest: '~'
+      src: bartering-protocol/ips.txt
+    name: copy IPs file
+  - copy:
+      dest: '~'
+      src: measurements/perf_meas.py
+    name: copy python measurements script
+  - name: launch python script
+    shell: python3 perf_meas.py
+  - fetch:
+      dest: ./measurements/data.json
+      src: ~/data.json
+    name: copy results
+  - fetch:
+      dest: ./measurements/data-2.json
+      src: ~/data-2.json
+    name: copy results
+  vars:
+    file_size: '100'

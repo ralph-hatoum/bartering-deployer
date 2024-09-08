@@ -1,0 +1,30 @@
+- gather_facts: false
+  hosts: Bootstrap-node
+  tasks:
+  - name: Start IPFS dameon
+    shell: nohup ipfs daemon --enable-gc >/dev/null 2>&1 &
+- gather_facts: false
+  hosts: IPFS-nodes
+  tasks:
+  - name: Start IPFS dameon
+    shell: nohup ipfs daemon --enable-gc >/dev/null 2>&1 &
+  vars:
+    bootstrap_id: '{{lookup(''file'',''id_secret/bootstrap_id.txt'')}}'
+- gather_facts: false
+  hosts: BarteringNodes1
+  tasks:
+  - name: Run bartering protocol
+    shell: nohup bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering {{
+      bootstrap_ip }} >/dev/null 2>&1 &
+  vars:
+    bootstrap_ip: '{{lookup(''file'',''bartering-protocol/bootstrap_ip.txt'')}}'
+    group_name: BarteringNodes1
+- gather_facts: false
+  hosts: BarteringNodes2
+  tasks:
+  - name: Run bartering protocol
+    shell: nohup bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering {{
+      bootstrap_ip }} >/dev/null 2>&1 &
+  vars:
+    bootstrap_ip: '{{lookup(''file'',''bartering-protocol/bootstrap_ip.txt'')}}'
+    group_name: BarteringNodes2

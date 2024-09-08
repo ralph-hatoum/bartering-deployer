@@ -1,0 +1,29 @@
+- gather_facts: false
+  hosts: null
+  tasks:
+  - name: Kill IPFS daemon
+    shell: kill $(ps aux | grep 'ipfs') | awk '{print $2}')
+  - name: Erase IPFS cache
+    shell: ipfs repo gc
+  - name: Erase IPFS blocks
+    shell: rm -rf ~/.ipfs/blocks/*
+  - name: Erase IPFS blocks again
+    shell: rm -rf ~/.ipfs/datastore/*
+  - name: Erase IPFS pins
+    shell: rm -rf ~/.ipfs/pins/*
+- gather_facts: false
+  hosts: BarteringNodes1
+  tasks:
+  - name: Kill bartering protocol
+    shell: kill $(ps aux | grep 'bartering') | awk '{print $2}')
+  vars:
+    bootstrap_ip: '{{lookup(''file'',''bartering-protocol/bootstrap_ip.txt'')}}'
+    group_name: BarteringNodes1
+- gather_facts: false
+  hosts: BarteringNodes2
+  tasks:
+  - name: Kill bartering protocol
+    shell: kill $(ps aux | grep 'bartering') | awk '{print $2}')
+  vars:
+    bootstrap_ip: '{{lookup(''file'',''bartering-protocol/bootstrap_ip.txt'')}}'
+    group_name: BarteringNodes2
