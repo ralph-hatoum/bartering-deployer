@@ -16,7 +16,12 @@ server_socket.bind(server_address)
 # Listen for incoming connections
 server_socket.listen(1)
 
-PEERS = ['hercule-1.lyon.grid5000.fr', 'hercule-2.lyon.grid5000.fr', 'hercule-4.lyon.grid5000.fr', 'nova-12.lyon.grid5000.fr', 'nova-18.lyon.grid5000.fr', 'orion-1.lyon.grid5000.fr', 'orion-3.lyon.grid5000.fr', 'orion-4.lyon.grid5000.fr', 'sagittaire-3.lyon.grid5000.fr', 'sagittaire-4.lyon.grid5000.fr', 'sagittaire-5.lyon.grid5000.fr', 'sagittaire-14.lyon.grid5000.fr', 'sagittaire-15.lyon.grid5000.fr', 'sagittaire-16.lyon.grid5000.fr', 'taurus-1.lyon.grid5000.fr', 'taurus-5.lyon.grid5000.fr', 'taurus-6.lyon.grid5000.fr', 'taurus-7.lyon.grid5000.fr', 'taurus-9.lyon.grid5000.fr', 'taurus-10.lyon.grid5000.fr']
+PEERS = []
+
+with open("./machines.txt", "r") as f:
+    PEERS = f.readlines()
+
+PEERS = list(map(lambda x : x[:-1], PEERS))
 
 print('Waiting for a connection...')
 
