@@ -1,5 +1,6 @@
 import json
 # from python_scripts.pinger import ping_all_machines
+from is_network_up import get_targets, hit_target
 from prometheus.prometheus_conf_writer import prometheus_conf_writer
 import yaml
 import os
@@ -7,9 +8,11 @@ import node_reservation
 from grid5000 import Grid5000
 import bartering_conf_builder
 import subprocess
+import socket
 from is_network_up import get_targets, hit_target
 from machine_test_starter import ping_machines_to_start
 import time
+import random
 
 
 ## TODO GENERATE SWARM KEY !!!
@@ -79,6 +82,7 @@ gk = Grid5000.from_yaml(conf_file)
 # job, result = node_reservation.submit_job(gk, "lyon", "", nodes_needed, "debian11-min","0:03:30")
 
 job = node_reservation.submit_job_and_only_job(gk, "lyon", "", nodes_needed, "debian11-min",test_length)
+#job = node_reservation.submit_job_and_only_job_res(gk, "lyon", nodes_needed, "debian11-min",test_length,"15:00")
 
 # TODO test if deployment OK (on result var), if not need to del job and abort test
 
@@ -138,22 +142,48 @@ with open("./playbooks/bartering-protocol/ips.txt","w") as f:
 
 print("\n ips.txt file for bartering bootstrap written in playbooks/bartering-protocol \n")
 
+
+
+# Assign Node Profiles based on the specified percentages
+num_benefactors = int(0.10 * nodes_needed)  # 10% Benefactors
+num_peers = int(0.40 * nodes_needed)        # 40% Peers
+num_peepers = nodes_needed - num_benefactors - num_peers
+
+profiles = ["benefactor"] * num_benefactors + ["peer"] * num_peers + ["peeper"] * num_peepers
+random.shuffle(profiles)
+
+# Assign profiles to hosts
+host_profiles = dict(zip(available_hosts, profiles))
+
+# Print assigned profiles for each host
+for host, profile in host_profiles.items():
+    print(f"Node {host} has been assigned the profile: {profile}")
+
+print("\n")
+bootstrap_profile = host_profiles[bootstrap_node]
+
+
+
+
 available_hosts.remove(bootstrap_node)
+
 
 
 print("Building hosts.ini file ...")
 
-with open("hosts/hosts.ini","w") as f:
-    f.write(f"[Bootstrap-node]\n{username}@{bootstrap_node} label=bootstrap label_ip={bootstrap_node}\n")
-    f.write('\n')
+with open("hosts/hosts.ini", "w") as f:
+    ip_address = socket.gethostbyname(bootstrap_node)
+    f.write(f"[Bootstrap-node]\n{username}@{bootstrap_node} label=bootstrap label_ip={bootstrap_node} ip_address={ip_address} node_profile={bootstrap_profile}\n\n")
     f.write(f"[IPFS-nodes]\n")
-    n = 0
     for host in available_hosts:
-        f.write(f"{username}@{host} label=node{n} label_ip={host}\n")
-        n +=1 
-    f.write('\n')
+        ip_address = socket.gethostbyname(host)
+        profile = host_profiles[host]
+        f.write(f"{username}@{host} label=node label_ip={host} ip_address={ip_address} node_profile={profile}\n\n")
 
 print("\n\033[0;32mhosts.ini file successfully built!\033[0m\n")
+    
+    
+    
     
 available_hosts.append(bootstrap_node)
 
@@ -167,8 +197,15 @@ if flag_bartering:
 
     with open("hosts/hosts.ini","a") as f:
         counter = 0
-        f.write(f"[BarteringBootstrap]\n{username}@{available_hosts[0]} label=bartering-bootstrap label_ip={available_hosts[0]}\n")
-
+            
+        # Get the IP address for the first host
+        ip_address = socket.gethostbyname(available_hosts[0])
+        
+        
+        # Write the host entry with IP address
+        f.write(f"[BarteringBootstrap]\n")
+        f.write(f"{username}@{available_hosts[0]} label=bartering-bootstrap label_ip={available_hosts[0]} ip_address={ip_address}\n")
+    
         # Open model bootstrap playbook
         bootstrap_file = open("bartering_playbooks/model_bartering_bootstrap.yml", "r") 
         base_bootstrap = yaml.safe_load(bootstrap_file)
@@ -181,6 +218,7 @@ if flag_bartering:
         existing_playbook.append(base_bootstrap[0])
 
 
+       
         for key in bartering_configs.keys():
             f.write(f"[BarteringNodes{key}]\n")
             number_of_nodes = bartering_configs[key]["Nodes"]
@@ -196,7 +234,8 @@ if flag_bartering:
             existing_playbook.append(base_node[0])
 
             while n < number_of_nodes:
-                f.write(f"{username}@{available_hosts[counter]} label=bartering-node{counter} label_ip={available_hosts[counter]}\n")
+                ip_address = socket.gethostbyname(available_hosts[counter])
+                f.write(f"{username}@{available_hosts[counter]} label=bartering-node{counter} label_ip={available_hosts[counter]} ip_address={ip_address}\n")
                 n+=1
                 counter +=1
     with open("playbooks/playbook.yml","w") as f:
@@ -278,12 +317,11 @@ print("\nLaunching playbook ...")
 
 os.system("ansible-playbook playbooks/playbook.yml -i hosts/hosts.ini")
 
+#os.system("ansible-playbook playbooks/FIO_threads.yml -i hosts/hosts.ini")
+
 print("\n Getting network status ... ")
 
-targets = get_targets()
 
-for target in targets:
-    hit_target(target)
 
 time.sleep(10)
 

@@ -17,10 +17,28 @@ command = ""
 def submit_job_and_only_job(gk, site, timeout, number_of_nodes, env, res_duration):
     site = gk.sites[site]
 
+     # Modify the properties to include the specific clusters in Lyon
+
+     # Define the cluster of interest
+    cluster_of_interest = "taurus"
+
+     # Set properties to only include the 'taurus' cluster
+    properties = f"(cluster='{cluster_of_interest}')"
+    
+     # Convert res_duration from "HH:MM:SS" to total seconds
+    parts = res_duration.split(':')
+    if len(parts) == 3:
+        hours, minutes, seconds = map(int, parts)
+        total_seconds = hours * 3600 + minutes * 60 + seconds
+    else:
+        raise ValueError("Invalid time format. Please use 'HH:MM:SS'.")
+
+
     job = site.jobs.create({"name": "bartering-deployment",
-                        "command": "sleep 3600",
+                        "command": f"sleep {total_seconds}",  # Set sleep to the full duration of the walltime in seconds
                         "types": ["deploy"],
-                        "resources": f"nodes={number_of_nodes},walltime={res_duration}"})
+                        "resources": f"nodes={number_of_nodes},walltime={res_duration}",
+                        "properties": properties    })
     
     while job.state != "running":
         job.refresh()
@@ -30,14 +48,85 @@ def submit_job_and_only_job(gk, site, timeout, number_of_nodes, env, res_duratio
     print("Assigned nodes : %s" % job.assigned_nodes)
 
     return job
+def submit_job_and_only_job_res(gk, site, number_of_nodes, env, res_duration, start_hour):
+    # Current date and time
+    current_time = datetime.datetime.now()
+
+    # Parse hour and minute from start_hour
+    start_dt = datetime.datetime.strptime(start_hour, "%H:%M")
+
+    # Adjust start_dt to today's date
+    start_dt = current_time.replace(hour=start_dt.hour, minute=start_dt.minute, second=0, microsecond=0)
+
+    # If start time is in the past, adjust it to the next day
+    if start_dt <= current_time:
+        start_dt += datetime.timedelta(days=1)
+
+    site_obj = gk.sites[site]
+
+    
+    
+     # Modify the properties to include the specific clusters in Lyon
+
+     # Modify the properties to include the specific nodes in the 'taurus' cluster
+    nodes_of_interest = ["taurus-1", "taurus-5", "taurus-6", "taurus-10"]
+    nodes_property = " or ".join([f"network_address='{node}'" for node in nodes_of_interest])
+
+        # Set properties to include only the specified nodes
+    properties = f"(cluster='taurus' and ({nodes_property}))"
+    
+     # Convert res_duration from "HH:MM:SS" to total seconds
+    parts = res_duration.split(':')
+    if len(parts) == 3:
+        hours, minutes, seconds = map(int, parts)
+        total_seconds = hours * 3600 + minutes * 60 + seconds
+    else:
+        raise ValueError("Invalid time format. Please use 'HH:MM:SS'.")
+
+
+
+    # Creating the job with specified walltime and start time
+    job = site_obj.jobs.create({
+        "name": "scheduled-deployment",
+        "command": f"sleep {total_seconds}",  # Set sleep to the full duration of the walltime in seconds
+        "types": ["deploy"],
+        "resources": f"nodes={number_of_nodes},walltime={res_duration}",
+        "properties": properties,
+        "reservation": start_dt.strftime("%Y-%m-%d %H:%M:%S")
+    })
+
+    while job.state != "running":
+        job.refresh()
+        print(f"Waiting for the job [{job.uid}] to start running...")
+        time.sleep(10)
+
+    print(f"Job [{job.uid}] is running with nodes: {job.assigned_nodes}")
+    return job
+
 
 def submit_job(gk, site, timeout, number_of_nodes, env, res_duration):
     site = gk.sites[site]
+    
+    # Modify the properties to include the specific clusters in Lyon
+    clusters = ["gemini", "neowise", "nova", "orion", "pyxis", "sagittaire", "sirius", "taurus"]
+    cluster_conditions = " OR ".join([f"cluster='{cluster}'" for cluster in clusters])
+    properties = f"({cluster_conditions})"
+    
+    # Convert res_duration from "HH:MM:SS" to total seconds
+    parts = res_duration.split(':')
+    if len(parts) == 3:
+        hours, minutes, seconds = map(int, parts)
+        total_seconds = hours * 3600 + minutes * 60 + seconds
+    else:
+        raise ValueError("Invalid time format. Please use 'HH:MM:SS'.")
+
+
 
     job = site.jobs.create({"name": "bartering-deployment",
-                        "command": "sleep 3600",
+                        "command": f"sleep {total_seconds}",  # Set sleep to the full duration of the walltime in seconds,
                         "types": ["deploy"],
-                        "resources": f"nodes={number_of_nodes},walltime={res_duration}"})
+                        "resources": f"nodes={number_of_nodes},walltime={res_duration}",
+                        "properties": properties})
     
     while job.state != "running":
         job.refresh()
@@ -99,6 +188,9 @@ def reserve_nodes(site, cluster, timeout, number_of_nodes, command):
     assigned_nodes = job_info["assigned_nodes"]
 
     return assigned_nodes
+
+
+
 
 
 

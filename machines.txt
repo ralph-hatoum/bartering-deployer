@@ -1,0 +1,4 @@
+nova-11.lyon.grid5000.fr
+orion-1.lyon.grid5000.fr
+taurus-1.lyon.grid5000.fr
+taurus-13.lyon.grid5000.fr

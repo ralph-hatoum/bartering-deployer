@@ -1,7 +1,7 @@
 - hosts: #BARTERING nodes
   gather_facts: no
   vars: 
-    bootstrap_ip: "{{lookup('file','bartering-protocol/bootstrap_ip.txt')}}"
+    
     group_name: 
   tasks:
     - name: Make bartering folder
@@ -10,21 +10,26 @@
       copy:
         src: bartering-protocol/bartering
         dest: bartering/{{ hostvars[inventory_hostname]['label'] }}
-    - name: Copy bartering config file
+
+    - name: copy FIO test file
       copy:
-        src: bartering-protocol/{{ group_name }}/config.yaml
+        src: bartering-protocol/fio_test.fio
         dest: "~"
-    - name:
+
+    - name: copy FIO shell file
       copy:
-        src: bartering-protocol/writer.py
-        dest: "~"
+        src: bartering-protocol/run_fio_periodically.sh
+        dest: "~"    
+
     - name : Authorize execution of bartering binary
       shell: chmod u+x bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering
     - name: Make data dir
       shell: mkdir -p data
+      
     - name: Run bartering protocol
-      shell: nohup bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering {{ bootstrap_ip }} >/dev/null 2>&1 &
+      shell: nohup ./bartering/{{ hostvars[inventory_hostname]['label'] }}/bartering {{ hostvars[ groups['BarteringBootstrap'][0]]['ip_address'] }} >./bartering_stdout.log 2>./bartering_stderr.log &
     - name: Install
       shell: pip install numpy
-    - name: Run data writer
-      shell: nohup python3 writer.py >/dev/null 2>&1 &
+
+    #- name: Run data writer
+      #shell: nohup fio fio_test.fio --output=fio_results.txt > fio_stdout.log 2> fio_stderr.log &

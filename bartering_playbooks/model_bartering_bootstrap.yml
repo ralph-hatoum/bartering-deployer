@@ -1,7 +1,7 @@
 - hosts: #BARTERING bootstrap
   gather_facts: no
   vars: 
-    bootstrap_ip: "{{lookup('file','bartering-protocol/bootstrap_ip.txt')}}"
+   
   tasks:
     - name: Make bartering bootstrap folder
       shell : mkdir -p bartering-bootstrap/
@@ -13,9 +13,14 @@
       copy:
         src: bartering-protocol/ips.txt
         dest: "~"
+    
+    
     - name : Allow bootstrap binary to be executable
       shell: chmod u+x bartering-bootstrap/bootstrap
-    - name: Start bootstrap
-      shell: nohup bartering-bootstrap/bootstrap {{ bootstrap_ip }} >/dev/null 2>&1 &
-    # - name: display command output
-    #   debug: var=bootstrapOutput.stdout_lines
+
+    - name: Start bootstrap 
+      shell: nohup ./bartering-bootstrap/bootstrap {{ hostvars[ groups['BarteringBootstrap'][0]]['ip_address'] }} >/dev/null 2>&1 &
+    
+    
+#    - name: display command output
+ #     debug: var=ip_list.stdout_lines

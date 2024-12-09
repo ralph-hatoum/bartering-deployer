@@ -1,0 +1,25 @@
+[global]
+ioengine=libaio         ; Linux native asynchronous I/O
+direct=1                ; Use non-buffered I/O
+size=10M                ; Total size of I/O for each thread
+runtime=60              ; Run each job for 1 minute (60 seconds)
+time_based              ; Run for the full runtime instead of until the size is reached
+iodepth=32              ; Number of I/O operations to keep in flight
+filename=fio_test_file  ; Name of the test file
+directory=./data        ; Directory to store the test files
+
+[job_read]
+bs=4k                   ; Block size set to 4KB
+rw=read                 ; Perform sequential read operations
+
+[job_write]
+bs=4k
+rw=write                ; Perform sequential write operations
+
+[job_randread]
+bs=4k
+rw=randread             ; Perform random read operations
+
+[job_randwrite]
+bs=4k
+rw=randwrite            ; Perform random write operations

@@ -14,7 +14,6 @@ bootstrap_domain=args[1]
 
 bootstrap_domain = bootstrap_domain.split("@")[1]
 
-print(bootstrap_domain)
 
 ip_address = get_ip_from_domain(bootstrap_domain)
 
